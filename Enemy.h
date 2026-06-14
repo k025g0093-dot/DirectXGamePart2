@@ -3,7 +3,7 @@
 #include "AABB.h"
 #include "MyMath.h"
 class Player;
-
+class GameScene;
 enum class EnemyBehavior {
 	kRoot,   //(通常状態を表す)
 	kDead, //(死亡状態を表す)
@@ -32,10 +32,15 @@ public:
 
 	bool isCollisionDisabled_ = false;
 	bool IsCollisionDisabled() const { return isCollisionDisabled_; }
-
+	
+	void SetGameScene(GameScene* gameScene) { gameScene_ = gameScene; }
 
 
 private: // プライベート関数群とかのその他
+
+	    GameScene* gameScene_ = nullptr;
+
+
 	// ワールドトランスフォーム
 	KamataEngine::WorldTransform worldTransform_;
 	// 3Dモデルで必要なモデルの呼び出し

@@ -116,14 +116,14 @@ public:
 	static KamataEngine::Vector3 CornerPositio(const KamataEngine::Vector3& center, Corner corner);
 
 	const bool isAttack();
-
-private: // プライベート関数群とかのその他
 	// ワールドトランスフォーム
 	KamataEngine::WorldTransform worldTransform_;
 	// 3Dモデルで必要なモデルの呼び出し
 	KamataEngine::Model* model_ = nullptr;
 	// テクスチャハンドル
 	uint32_t textureHandle_;
+
+private: // プライベート関数群とかのその他
 
 	// カメラ
 	KamataEngine::Camera* camera_ = nullptr;
