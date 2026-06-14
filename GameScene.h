@@ -8,6 +8,8 @@
 #include "MapChipField.h"
 #include "Player.h"
 #include "SkyDome.h"
+#include "HitEffect.h"
+
 #include <vector>
 #include "Fade.h"
 enum class Phase {kFadeIn, kPlay, kDeath,kFadeOut };
@@ -37,7 +39,9 @@ public:
 	KamataEngine::Model* modelAttack_ = nullptr;  // プレイヤーの攻撃モデル
 	KamataEngine::Model* modelMap_ = nullptr;     // マップのモデル
 	KamataEngine::Model* modelEnemy_ = nullptr;   // 敵のモデル
-	KamataEngine::Model* modelParticl_ = nullptr; // 敵のモデル
+	KamataEngine::Model* modelParticl_ = nullptr; // プレイヤーの死亡時に出るパーティクル
+	KamataEngine::Model* modelHitEffect = nullptr;//敵が攻撃を食らったときに出るエフェクト
+
 
 #pragma endregion
 
@@ -68,12 +72,16 @@ public:
 	std::list<Enemy*> enemyis_;
 	Fade* fade_ = nullptr;
 
+	HitEffect* hitEffect_ = nullptr;
+	std::list < HitEffect*> hitEffects_;
+	void CreateHitEffect(const KamataEngine::Vector3 postion);
+
 private:
 	void CheckAllCollisions();
 	void PlayeUpdate();
 	void DeathUpdate();
-
 	uint32_t textureHandle_;
+	int32_t maxEnemyCount;
 	bool isDebugCamera_ = false;
 	// プライベートでシーンごとの旋回用の処理関数を追加
 };

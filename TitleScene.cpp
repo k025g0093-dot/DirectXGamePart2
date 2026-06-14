@@ -11,7 +11,7 @@ void TitleScene::Initialize() {
 	fade_->Initialize();
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 
-	modelTitle_ = Model::CreateFromOBJ("player", true);
+	modelTitle_ = Model::CreateFromOBJ("titleFont", true);
 	assert(modelTitle_);
 
 	worldTransform_.Initialize();
@@ -19,13 +19,13 @@ void TitleScene::Initialize() {
 	objectColor_.Initialize();
 
 	// 1. キャラを正面に向ける設定
-	worldTransform_.scale_ = {1.5f, 1.5f, 1.5f};    // 少し大きく設定
-	worldTransform_.rotation_ = {0.0f, 180.0f, 0.0f}; // 向きが逆なら 3.1415f (180度) に
+	worldTransform_.scale_ = {0.8f, 0.8f, 0.8f};    // 少し大きく設定
+	worldTransform_.rotation_ = {0.0f, 0.0f, 0.0f}; // 向きが逆なら 3.1415f (180度) に
 	worldTransform_.translation_ = {0.0f, 0.0f, 0.0f};
 
 	// 2. カメラの初期位置（キャラの正面に配置）
 	// zをマイナスにすると手前になります
-	camera_.translation_ = {0.0f, 0.5f, -5.0f};
+	camera_.translation_ = {0.0f, 0.5f, -15.0f};
 }
 
 void TitleScene::Update() {

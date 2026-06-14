@@ -4,7 +4,9 @@
 #include <cassert>
 #include <numbers>
 #include "Player.h"
-using namespace KamataEngine;
+#include "GameScene.h"
+
+ using namespace KamataEngine;
 
 // 初期化処理
 void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position) {
@@ -135,8 +137,12 @@ void Enemy::OnCollsion(Player* player) {
 	if (player->isAttack()) {
 		isCollisionDisabled_ = true;
 		behaviorRequest_ = EnemyBehavior::kDead;
+		Vector3 effectPos = GetWorldPodition();
+		// 既存のGameSceneポインタを使う
+		if (gameScene_) {
+			gameScene_->CreateHitEffect(effectPos);
+		}
 	}
-
 }
 
 float Enemy::EaseOut(float start, float end, float t)

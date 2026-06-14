@@ -1,6 +1,6 @@
 #include "GameScene.h"
-#include <cassert>
 #include "MyMath.h"
+#include <cassert>
 //===================================================
 // パブリックの処理
 //===================================================
@@ -32,12 +32,13 @@ void GameScene::Initialize() {
 #pragma endregion
 
 #pragma region モデルの読み込み
-	modelMap_ = Model::CreateFromOBJ("block", true);       // マップのモデル
-	modelSkydome_ = Model::CreateFromOBJ("skydome", true); // スカイドームのモデル
-	modelPlayer_ = Model::CreateFromOBJ("player", true);   // プレイヤーのモデル
+	modelMap_ = Model::CreateFromOBJ("block", true);         // マップのモデル
+	modelSkydome_ = Model::CreateFromOBJ("skydome", true);   // スカイドームのモデル
+	modelPlayer_ = Model::CreateFromOBJ("player", true);     // プレイヤーのモデル
 	modelAttack_ = Model::CreateFromOBJ("hit_effect", true); // プレイヤーの攻撃モデル
-	modelEnemy_ = Model::CreateFromOBJ("enemy", true);     // 敵のモデル
-	modelParticl_ = Model::CreateFromOBJ("player", true);  // 仮モデルでプレイヤーのモデルを使用
+	modelEnemy_ = Model::CreateFromOBJ("enemy", true);       // 敵のモデル
+	modelParticl_ = Model::CreateFromOBJ("player", true);    // 仮モデルでプレイヤーのモデルを使用
+	modelHitEffect = Model::CreateFromOBJ("particle", true);
 	// 描画用ポインタへの代入
 	assert(modelMap_);
 	model_ = modelMap_;
@@ -65,8 +66,8 @@ void GameScene::Initialize() {
 
 	// プレイヤー初期化 (座標計算とカメラの紐付け)
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 15);
-
-	for (int32_t i = 0; i < 3; i++) {
+	maxEnemyCount = 3;
+	for (int32_t i = 0; i < maxEnemyCount; i++) {
 		// 1. 毎回新しいメモリを確保する
 		Enemy* newEnemy = new Enemy();
 
@@ -75,10 +76,12 @@ void GameScene::Initialize() {
 
 		// 3. 新しく作った個体に対して初期化
 		newEnemy->Initialize(modelEnemy_, &cameraController_->GetCamera(), enemyPosition);
-
+		newEnemy->SetGameScene(this); 
 		// 4. vectorに追加
 		enemyis_.push_back(newEnemy);
 	}
+
+
 
 	// playerの初期化とセッターによる情報の受け渡しw
 	player_->Initialize(modelPlayer_, modelAttack_, &cameraController_->GetCamera(), playerPosition);
@@ -91,6 +94,9 @@ void GameScene::Initialize() {
 	SkyDome_->Initialize(modelSkydome_);
 #pragma endregion
 
+	// ヒットエフェクトのセッター
+	HitEffect::SetModel(modelHitEffect);
+	HitEffect::SetCamera(&cameraController_->GetCamera());
 
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 }
@@ -112,6 +118,7 @@ void GameScene::Update() {
 		// ゲーム中の処理
 		PlayeUpdate();
 
+
 		break;
 	case Phase::kDeath:
 
@@ -120,7 +127,7 @@ void GameScene::Update() {
 
 		// 右端の処理：パーティクルもフェードも終わったらシーン終了
 		if (deathParticles_->IsFinished() && fade_->IsFinished()) {
-			
+
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
 			phase_ = Phase::kFadeOut;
 		}
@@ -129,14 +136,13 @@ void GameScene::Update() {
 	case Phase::kFadeOut:
 		if (fade_->IsFinished()) {
 			finished_ = true;
-
 		}
 
 		break;
 
 	default:
 		break;
-	}	
+	}
 }
 
 // 描画処理
@@ -161,6 +167,12 @@ void GameScene::Draw() {
 	for (Enemy* enemy : enemyis_) {
 
 		enemy->Draw();
+	}
+
+	for (HitEffect* hiteffect : hitEffects_) {
+		if (!hiteffect->isDead_) { // ← 追加（生きてるやつだけ描画）
+			hiteffect->Draw();
+		}
 	}
 
 	if (!deathParticles_->isFinished_) {
@@ -201,6 +213,7 @@ GameScene::~GameScene() {
 	delete cameraController_;
 	delete SkyDome_;
 	delete fade_;
+	delete hitEffect_;
 
 	for (std::vector<WorldTransform*>& worldTransformBlockRow : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockRow) {
@@ -210,9 +223,9 @@ GameScene::~GameScene() {
 	for (Enemy* enemy : enemyis_) {
 		delete enemy;
 	}
+
 	worldTransformBlocks_.clear();
 }
-
 
 #pragma endregion
 //===================================================
@@ -299,7 +312,9 @@ void GameScene::PlayeUpdate() {
 		enemy->Update();
 	}
 
-
+	for (HitEffect* hiteffect : hitEffects_) {
+		hiteffect->Update();
+	}
 
 	// 2. カメラコントローラーの更新（動いたプレイヤーをカメラが追いかける）
 	// ★これが抜けているので追加してください
@@ -340,6 +355,14 @@ void GameScene::PlayeUpdate() {
 		return false;
 	});
 
+	hitEffects_.remove_if([](HitEffect* hiteffect) {
+		if (hiteffect->isDead_) {
+			delete hiteffect;
+			return true;
+		}
+		return false;
+	});
+
 }
 #pragma endregion
 
@@ -374,7 +397,13 @@ void GameScene::DeathUpdate() {
 			worldTransformBlock->TransferMatrix();
 		}
 	}
-
-
 }
 #pragma endregion
+
+void GameScene::CreateHitEffect(const Vector3 postion) 
+{
+
+	HitEffect* newHitEffect = HitEffect::Create(postion);
+	hitEffects_.push_back(newHitEffect);
+
+}
