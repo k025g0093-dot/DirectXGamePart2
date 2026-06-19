@@ -3,12 +3,16 @@
 #include "CameraController.h"
 #include "Collision.h"
 #include "DeathParticles.h"
+
 #include "Enemy.h"
+#include "ShieldEnemy.h"
+
 #include "KamataEngine.h"
 #include "MapChipField.h"
 #include "Player.h"
 #include "SkyDome.h"
 #include "HitEffect.h"
+#include "GuardEffect.h"
 
 #include <vector>
 #include "Fade.h"
@@ -38,10 +42,13 @@ public:
 	KamataEngine::Model* modelPlayer_ = nullptr;  // プレイヤーのモデル
 	KamataEngine::Model* modelAttack_ = nullptr;  // プレイヤーの攻撃モデル
 	KamataEngine::Model* modelMap_ = nullptr;     // マップのモデル
+	
 	KamataEngine::Model* modelEnemy_ = nullptr;   // 敵のモデル
+	KamataEngine::Model* modelshieldEnemy_ = nullptr;
+
 	KamataEngine::Model* modelParticl_ = nullptr; // プレイヤーの死亡時に出るパーティクル
 	KamataEngine::Model* modelHitEffect = nullptr;//敵が攻撃を食らったときに出るエフェクト
-
+	KamataEngine::Model* modelGuardEffect_ = nullptr;
 
 #pragma endregion
 
@@ -65,16 +72,26 @@ public:
 
 	Player* player_ = nullptr;
 	Enemy* enemy_ = nullptr;
+	std::list<Enemy*> enemyis_;
+
+	ShieldEnemy* shieldEnemy_ = nullptr;
+	std::list<ShieldEnemy*> shieldEnemyis_;
+
 	SkyDome* SkyDome_ = nullptr;
 	MapChipField* mapChipField_;
 	CameraController* cameraController_;
 	DeathParticles* deathParticles_ = nullptr;
-	std::list<Enemy*> enemyis_;
 	Fade* fade_ = nullptr;
 
 	HitEffect* hitEffect_ = nullptr;
 	std::list < HitEffect*> hitEffects_;
+
+	GuardEffect* guardEffect_ = nullptr;
+	std::list<GuardEffect*> guardEffects_;
+
+
 	void CreateHitEffect(const KamataEngine::Vector3 postion);
+	void CreateGuardEffect(const KamataEngine::Vector3 postion);
 
 private:
 	void CheckAllCollisions();

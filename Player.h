@@ -24,8 +24,15 @@ enum class AttackPhase {
 	kAfterglow
 };
 
+enum class KnockbackPhase { 
+	kStartKnockback, 
+	kRestructureTheSystem,
+	kAfterglow
+};
+
 class MapChipField;
 class Enemy;
+class ShieldEnemy;
 
 class Player {
 
@@ -40,6 +47,8 @@ public:
 	float turnFistRotationY_ = 0.0f;
 	// 旋回タイマー
 	float turnTimer_ = 0.0f;
+
+	LRDirection GetLRDirection() const { return lrDirection_; }
 
 #pragma endregion
 
@@ -64,10 +73,15 @@ public:
 	void Updata();
 
 	void Draw();
-	void OnCollsion(const Enemy* enemy);
+	void EnemyOnCollsion(const Enemy* enemy);
+	void ShieldEnemyOnCollsion(const ShieldEnemy* shieldEnemy);
 
 	bool isDead_=false;
 	bool IsDead() const { return isDead_; };
+
+	bool isKnockBack_= false;
+	void IsKnockBack();
+
 
 	//現在のビヘイビアを表す変数
 	Behavior behavior_ = Behavior::kRoot;
@@ -167,13 +181,21 @@ private: // プライベート関数群とかのその他
 #pragma endregion
 
 	AttackPhase kAttackPhase_ = AttackPhase::kSave;
-
 	//攻撃ギミックの経過カウンター
 	uint32_t attackCounter_ = 0;
 
+	KnockbackPhase kKnockBack_ = KnockbackPhase::kStartKnockback;
+
+	static constexpr float kKnockbackSpeed = 0.3f;             // ノックバック速度
+	static constexpr float kKnockbackUpSpeed = 0.5f;           // ノックバック上方向速度
+	static constexpr float kKnockbackAttenuation = 0.05f;      // 減衰率
+	static constexpr int32_t kKnockbackDuration = 20;          // ノックバック時間（フレーム）
+	static constexpr int32_t kKnockbackAfterglowDuration = 10; // 余韻時間
+	uint32_t knockbackCounter_ = 0;                            // カウンター
+
 	// 旋回時間＜秒＞
 	static inline const float kTimeTrun = 0.3f;
-	static constexpr float kAttackSpeed = 0.5f;
+	static constexpr float kAttackSpeed = 0.8f;
 	// プライベート関数
 	void MovePlayer();
 
@@ -181,11 +203,16 @@ private: // プライベート関数群とかのその他
 	void BehaviorRootInitialize();
 	//攻撃行動の初期化
 	void BehaviorAttackInitialize();
+	//ノックバックの初期化
+	void BehaviorKnockbackInitialize();
 
 	//通常更新処理
 	void BehaviorRootUpdate(); 
 	//プレイヤーの攻撃更新処理
 	void BehaviorAttackUpdate();
+	//プレイヤーのノックバック時の処理
+	void BehaviorKnockbackUpdate();
+
 
 	float EaseOut(float start, float end, float t);
 };
