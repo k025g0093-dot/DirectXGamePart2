@@ -11,10 +11,7 @@ using namespace KamataEngine;
 Player::Player() {}
 bool isHit = false;
 void Player::Initialize(
-    KamataEngine::Model* model, 
-	KamataEngine::Model* modelAttack,
-	KamataEngine::Camera* camera,
-	const KamataEngine::Vector3& position
+    KamataEngine::Model* model, KamataEngine::Model* modelAttack, KamataEngine::Camera* camera, const KamataEngine::Vector3& position
 
 ) {
 
@@ -45,7 +42,6 @@ void Player::Updata() {
 		behavior_ = behaviorRequest_;
 		switch (behavior_) {
 		case Behavior::kRoot:
-
 			break;
 		case Behavior::kAttack:
 			attackCounter_ = 0;
@@ -68,21 +64,43 @@ void Player::Updata() {
 		}
 
 		break;
+
 	case Behavior::kAttack:
-		BehaviorAttackUpdate();
-		attackCounter_++;
 
+		// ★ ノックバック中と通常攻撃で処理を分ける
+		if (isKnockBack_) {
+			BehaviorKnockbackUpdate();
+		} else {
+			BehaviorAttackUpdate();
+			attackCounter_++;
+		}
 
-		if (attackCounter_ >= 10) {
+		// ★ ノックバック中も攻撃中も共通の衝突判定と移動処理を実行
+
+		CollisionMapInfo collisionMapInfo;
+		collisionMapInfo.velocity_ = velocity_;
+		// 1. 衝突判定と押し戻し量の計算
+		MapCollsion(collisionMapInfo);
+		// 2. 壁衝突後の減衰
+		IsHitWall(collisionMapInfo);
+		// 3. 地面や天井の判定
+		IsHitTop(collisionMapInfo);
+		IsGrounded(collisionMapInfo);
+		// 4. 最後に座標を確定させる
+		CheckedMove(collisionMapInfo);
+
+		// ★ ノックバック終了判定
+		if (!isKnockBack_ && attackCounter_ >= 10) {
 			velocity_.x = 0.0f; // 攻撃終了後に横方向の速度をリセット
 			worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
-			kAttackPhase_ = AttackPhase::kSave; // ★ 次の攻撃に備えてリセット
+			kAttackPhase_ = AttackPhase::kSave; // 次の攻撃に備えてリセット
 			behaviorRequest_ = Behavior::kRoot;
 		}
 
 		break;
-	default:
-		break;
+
+	//default:
+	//	break;
 	}
 #pragma endregion
 
@@ -98,12 +116,11 @@ void Player::Updata() {
 #pragma endregion
 }
 
-void Player::Draw() { 
+void Player::Draw() {
 	model_->Draw(worldTransform_, *camera_);
 	if (behavior_ == Behavior::kAttack) {
 		modelAttack_->Draw(worldTransformAttack_, *camera_);
 	}
-
 }
 
 Player::~Player() {}
@@ -113,6 +130,8 @@ Player::~Player() {}
 void Player::BehaviorRootInitialize() {}
 
 void Player::BehaviorAttackInitialize() {}
+
+void Player::BehaviorKnockbackInitialize() {};
 
 void Player::BehaviorRootUpdate() {
 #pragma region プレイヤーの移動処理
@@ -161,7 +180,6 @@ void Player::BehaviorAttackUpdate() {
 	}
 	velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
 	velocity_.y = 0;
-
 
 	Vector3 offset;
 	if (lrDirection_ == LRDirection::kRight) {
@@ -229,6 +247,47 @@ void Player::BehaviorAttackUpdate() {
 	// 最後に一回だけ座標を確定させる
 	CheckedMove(collisionMapInfo);
 #pragma endregion
+}
+
+void Player::BehaviorKnockbackUpdate() {
+
+	switch (kKnockBack_) {
+	case KnockbackPhase::kStartKnockback:
+		// ノックバック開始時の初期化
+		knockbackCounter_ = 0;
+		// 敵がいる方向の逆方向にノックバック
+		if (lrDirection_ == LRDirection::kRight) {
+			velocity_.x = -kKnockbackSpeed;
+		} else {
+			velocity_.x = kKnockbackSpeed;
+		}
+		// velocity_.y = kKnockbackUpSpeed;
+		kKnockBack_ = KnockbackPhase::kRestructureTheSystem;
+		break;
+
+	case KnockbackPhase::kRestructureTheSystem:
+		// ノックバック中の減衰処理
+		knockbackCounter_++;
+		velocity_.x *= (1.0f - kKnockbackAttenuation);
+
+		if (knockbackCounter_ >= kKnockbackDuration) {
+			kKnockBack_ = KnockbackPhase::kAfterglow;
+			knockbackCounter_ = 0;
+		}
+		break;
+
+	case KnockbackPhase::kAfterglow:
+		// 余韻処理（通常の移動に戻る前の調整）
+		knockbackCounter_++;
+		if (knockbackCounter_ >= kKnockbackAfterglowDuration) {
+			isKnockBack_ = false;
+			kKnockBack_ = KnockbackPhase::kStartKnockback; // 次のノックバックに備えて初期化
+		}
+		break;
+
+	default:
+		break;
+	}
 }
 
 #pragma endregion
@@ -594,15 +653,22 @@ AABB Player::GetAABB() {
 	return aabb;
 }
 
-void Player::OnCollsion(const Enemy* enemy) {
+void Player::EnemyOnCollsion(const Enemy* enemy) {
 	if (isAttack()) {
 		return;
 	}
 	(void)enemy;
 	isDead_ = true;
 	velocity_ += Vector3(0, 0.4f, 0);
+}
 
-
+void Player::ShieldEnemyOnCollsion(const ShieldEnemy* shieldEnemy) {
+	if (isAttack()) {
+		return;
+	}
+	(void)shieldEnemy;
+	isDead_ = true;
+	velocity_ += Vector3(0, 0.4f, 0);
 }
 
 float Player::EaseOut(float start, float end, float t) {
@@ -618,4 +684,10 @@ const bool Player::isAttack() {
 	}
 
 	return false;
+}
+
+// Player.h に宣言
+void Player::IsKnockBack() {
+	isKnockBack_ = true;
+	kKnockBack_ = KnockbackPhase::kStartKnockback; // フェーズをリセット
 }

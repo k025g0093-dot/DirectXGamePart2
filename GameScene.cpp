@@ -36,9 +36,14 @@ void GameScene::Initialize() {
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true);   // スカイドームのモデル
 	modelPlayer_ = Model::CreateFromOBJ("player", true);     // プレイヤーのモデル
 	modelAttack_ = Model::CreateFromOBJ("hit_effect", true); // プレイヤーの攻撃モデル
-	modelEnemy_ = Model::CreateFromOBJ("enemy", true);       // 敵のモデル
-	modelParticl_ = Model::CreateFromOBJ("player", true);    // 仮モデルでプレイヤーのモデルを使用
+
+	modelEnemy_ = Model::CreateFromOBJ("enemy", true);             // 敵のモデル
+	modelshieldEnemy_ = Model::CreateFromOBJ("shieldEnemy", true); // シールドを持った敵
+
+	modelParticl_ = Model::CreateFromOBJ("player", true); // 仮モデルでプレイヤーのモデルを使用
 	modelHitEffect = Model::CreateFromOBJ("particle", true);
+	modelGuardEffect_ = Model::CreateFromOBJ("particle", true);
+
 	// 描画用ポインタへの代入
 	assert(modelMap_);
 	model_ = modelMap_;
@@ -72,16 +77,28 @@ void GameScene::Initialize() {
 		Enemy* newEnemy = new Enemy();
 
 		// 2. 座標が重ならないように計算（例：X軸方向に5ずつずらす）
-		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(17 + i, 14 + i);
+		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(17 + i*2, 14 + i * 2);
 
 		// 3. 新しく作った個体に対して初期化
 		newEnemy->Initialize(modelEnemy_, &cameraController_->GetCamera(), enemyPosition);
-		newEnemy->SetGameScene(this); 
+		newEnemy->SetGameScene(this);
 		// 4. vectorに追加
 		enemyis_.push_back(newEnemy);
 	}
 
+	for (int32_t i = 0; i < maxEnemyCount; i++) {
+		// 1. 毎回新しいメモリを確保する
+		ShieldEnemy* newshieldEnemy = new ShieldEnemy();
 
+		// 2. 座標が重ならないように計算（例：X軸方向に5ずつずらす）
+		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(20 + i*2, 14 + i*2);
+
+		// 3. 新しく作った個体に対して初期化
+		newshieldEnemy->Initialize(modelshieldEnemy_, &cameraController_->GetCamera(), enemyPosition);
+		newshieldEnemy->SetGameScene(this);
+		// 4. vectorに追加
+		shieldEnemyis_.push_back(newshieldEnemy);
+	}
 
 	// playerの初期化とセッターによる情報の受け渡しw
 	player_->Initialize(modelPlayer_, modelAttack_, &cameraController_->GetCamera(), playerPosition);
@@ -97,6 +114,10 @@ void GameScene::Initialize() {
 	// ヒットエフェクトのセッター
 	HitEffect::SetModel(modelHitEffect);
 	HitEffect::SetCamera(&cameraController_->GetCamera());
+
+	GuardEffect::SetModel(modelGuardEffect_);
+	GuardEffect::SetCamera(&cameraController_->GetCamera());
+
 
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 }
@@ -117,7 +138,6 @@ void GameScene::Update() {
 
 		// ゲーム中の処理
 		PlayeUpdate();
-
 
 		break;
 	case Phase::kDeath:
@@ -165,8 +185,11 @@ void GameScene::Draw() {
 		player_->Draw(); // 内部で保持しているカメラを使用
 	}
 	for (Enemy* enemy : enemyis_) {
-
 		enemy->Draw();
+	}
+
+	for (ShieldEnemy* shieldEnemy : shieldEnemyis_) {
+		shieldEnemy->Draw();
 	}
 
 	for (HitEffect* hiteffect : hitEffects_) {
@@ -174,6 +197,14 @@ void GameScene::Draw() {
 			hiteffect->Draw();
 		}
 	}
+
+	for (GuardEffect* guardEffect : guardEffects_) {
+		if (!guardEffect->isDead_) { // ← 追加（生きてるやつだけ描画）
+			guardEffect->Draw();
+		}
+	}
+
+
 
 	if (!deathParticles_->isFinished_) {
 		deathParticles_->Draw();
@@ -214,6 +245,7 @@ GameScene::~GameScene() {
 	delete SkyDome_;
 	delete fade_;
 	delete hitEffect_;
+	delete guardEffect_;
 
 	for (std::vector<WorldTransform*>& worldTransformBlockRow : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockRow) {
@@ -222,6 +254,10 @@ GameScene::~GameScene() {
 	}
 	for (Enemy* enemy : enemyis_) {
 		delete enemy;
+	}
+
+	for (ShieldEnemy* shieldEnemy : shieldEnemyis_) {
+		delete shieldEnemy;
 	}
 
 	worldTransformBlocks_.clear();
@@ -271,14 +307,27 @@ void GameScene::CheckAllCollisions() {
 
 	aabb1 = player_->GetAABB();
 	for (Enemy* enemy : enemyis_) {
+
 		if (enemy->IsCollisionDisabled())
 			continue;
 
 		aabb2 = enemy->GetAABB();
 
 		if (IsCollision(aabb1, aabb2)) {
-			player_->OnCollsion(enemy);
+			player_->EnemyOnCollsion(enemy);
 			enemy->OnCollsion(player_);
+		}
+	}
+
+	for (ShieldEnemy* shieldEnemy : shieldEnemyis_) {
+		if (shieldEnemy->IsCollisionDisabled())
+			continue;
+
+		aabb2 = shieldEnemy->GetAABB();
+
+		if (IsCollision(aabb1, aabb2)) {
+			player_->ShieldEnemyOnCollsion(shieldEnemy);
+			shieldEnemy->OnCollsion(player_);
 		}
 	}
 }
@@ -308,13 +357,24 @@ void GameScene::PlayeUpdate() {
 	// 1. プレイヤーの更新（まずプレイヤーが動く）
 	player_->Updata();
 	for (Enemy* enemy : enemyis_) {
-
 		enemy->Update();
+	}
+
+	for (ShieldEnemy* shieldEnemy : shieldEnemyis_) {
+		shieldEnemy->Update();
 	}
 
 	for (HitEffect* hiteffect : hitEffects_) {
 		hiteffect->Update();
 	}
+
+
+	for (GuardEffect* guardEffect : guardEffects_) {
+		guardEffect->Update();
+	}
+
+	
+
 
 	// 2. カメラコントローラーの更新（動いたプレイヤーをカメラが追いかける）
 	// ★これが抜けているので追加してください
@@ -355,6 +415,16 @@ void GameScene::PlayeUpdate() {
 		return false;
 	});
 
+
+	shieldEnemyis_.remove_if([](ShieldEnemy* shieldEnemy) {
+		if (shieldEnemy->isDead_) {
+			delete shieldEnemy;
+			return true;
+		}
+		return false;
+	});
+
+
 	hitEffects_.remove_if([](HitEffect* hiteffect) {
 		if (hiteffect->isDead_) {
 			delete hiteffect;
@@ -363,6 +433,14 @@ void GameScene::PlayeUpdate() {
 		return false;
 	});
 
+
+	guardEffects_.remove_if([](GuardEffect* guardEffect) {
+		if (guardEffect->isDead_) {
+			delete guardEffect;
+			return true;
+		}
+		return false;
+	});
 }
 #pragma endregion
 
@@ -372,6 +450,10 @@ void GameScene::DeathUpdate() {
 
 	for (Enemy* enemy : enemyis_) {
 		enemy->Update();
+	}
+
+	for (ShieldEnemy* shieldEnemy : shieldEnemyis_) {
+		shieldEnemy->Update();
 	}
 
 	// スカイドームの更新処理
@@ -400,10 +482,14 @@ void GameScene::DeathUpdate() {
 }
 #pragma endregion
 
-void GameScene::CreateHitEffect(const Vector3 postion) 
-{
+void GameScene::CreateHitEffect(const Vector3 postion) {
 
 	HitEffect* newHitEffect = HitEffect::Create(postion);
 	hitEffects_.push_back(newHitEffect);
+}
 
+void GameScene::CreateGuardEffect(const Vector3 postion) {
+
+	GuardEffect* newGuardEffect = GuardEffect::Create(postion);
+	guardEffects_.push_back(newGuardEffect);
 }
