@@ -63,7 +63,7 @@ public:
 	// 描画処理
 	void Draw();
 
-	void GenerateBlocks();
+	void GenerateFieldObjects();
 
 	// 終了フラグ
 	bool finished_ = false;
@@ -92,6 +92,9 @@ public:
 
 	void CreateHitEffect(const KamataEngine::Vector3 postion);
 	void CreateGuardEffect(const KamataEngine::Vector3 postion);
+
+	bool reloadRequested_ = false;
+	bool GetReloadRequested() const { return reloadRequested_; }
 
 private:
 	void CheckAllCollisions();

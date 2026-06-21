@@ -1,6 +1,11 @@
 #include "GameScene.h"
 #include "MyMath.h"
 #include <cassert>
+
+#ifdef _DEBUG
+#include <imgui.h> 
+#endif
+
 //===================================================
 // パブリックの処理
 //===================================================
@@ -55,7 +60,7 @@ void GameScene::Initialize() {
 
 	// ここで距離の微調整が可能
 	cameraController_->targetOffset_ = {0.0f, 0.0f, -20.0f};
-	cameraController_->SetMovableArea({11, 100, 6, 100}); // カメラの移動できる最大値、最少値
+	cameraController_->SetMovableArea({11.0f, 100.0f, 6.0f, 100.0f}); // カメラの移動できる最大値、最少値
 	cameraController_->Reset();
 
 	// ライン描画用カメラをコントローラー側に同期
@@ -65,47 +70,9 @@ void GameScene::Initialize() {
 #pragma region マップ・オブジェクトの初期化
 	// マップチップ読み込み
 	mapChipField_->LoadMapChipCsv("./Resources/map.csv");
-	GenerateBlocks();
+	GenerateFieldObjects();
 
 	fade_->Initialize();
-
-	// プレイヤー初期化 (座標計算とカメラの紐付け)
-	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 15);
-	maxEnemyCount = 3;
-	for (int32_t i = 0; i < maxEnemyCount; i++) {
-		// 1. 毎回新しいメモリを確保する
-		Enemy* newEnemy = new Enemy();
-
-		// 2. 座標が重ならないように計算（例：X軸方向に5ずつずらす）
-		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(17 + i*2, 14 + i * 2);
-
-		// 3. 新しく作った個体に対して初期化
-		newEnemy->Initialize(modelEnemy_, &cameraController_->GetCamera(), enemyPosition);
-		newEnemy->SetGameScene(this);
-		// 4. vectorに追加
-		enemyis_.push_back(newEnemy);
-	}
-
-	for (int32_t i = 0; i < maxEnemyCount; i++) {
-		// 1. 毎回新しいメモリを確保する
-		ShieldEnemy* newshieldEnemy = new ShieldEnemy();
-
-		// 2. 座標が重ならないように計算（例：X軸方向に5ずつずらす）
-		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(20 + i*2, 14 + i*2);
-
-		// 3. 新しく作った個体に対して初期化
-		newshieldEnemy->Initialize(modelshieldEnemy_, &cameraController_->GetCamera(), enemyPosition);
-		newshieldEnemy->SetGameScene(this);
-		// 4. vectorに追加
-		shieldEnemyis_.push_back(newshieldEnemy);
-	}
-
-	// playerの初期化とセッターによる情報の受け渡しw
-	player_->Initialize(modelPlayer_, modelAttack_, &cameraController_->GetCamera(), playerPosition);
-	player_->SetMapChipFiled(mapChipField_); // マップのデータをプレイヤーに渡す
-
-	// やられたときに出るパーティクル（仮として現在プレイヤーのモデルが入っている
-	deathParticles_->Initialize(modelParticl_, &cameraController_->GetCamera(), playerPosition);
 
 	// スカイドーム初期化
 	SkyDome_->Initialize(modelSkydome_);
@@ -117,7 +84,6 @@ void GameScene::Initialize() {
 
 	GuardEffect::SetModel(modelGuardEffect_);
 	GuardEffect::SetCamera(&cameraController_->GetCamera());
-
 
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 }
@@ -138,6 +104,15 @@ void GameScene::Update() {
 
 		// ゲーム中の処理
 		PlayeUpdate();
+
+#ifdef _DEBUG
+		ImGui::Begin("Debug Menu");
+		if (ImGui::Button("Reload Request")) {
+			reloadRequested_ = !reloadRequested_;
+		}
+		ImGui::Text(GetReloadRequested() ? "Reload Status: TRUE" : "Reload Status: FALSE");
+		ImGui::End();
+#endif
 
 		break;
 	case Phase::kDeath:
@@ -167,7 +142,6 @@ void GameScene::Update() {
 
 // 描画処理
 void GameScene::Draw() {
-
 	// コントローラー側のカメラを取得
 	Camera& activeCamera = cameraController_->GetCamera();
 
@@ -203,8 +177,6 @@ void GameScene::Draw() {
 			guardEffect->Draw();
 		}
 	}
-
-
 
 	if (!deathParticles_->isFinished_) {
 		deathParticles_->Draw();
@@ -269,7 +241,7 @@ GameScene::~GameScene() {
 //===================================================
 
 #pragma region ブロックに関するもの
-void GameScene::GenerateBlocks() {
+void GameScene::GenerateFieldObjects() {
 	// 要素数
 	uint32_t numBlockVirtical = mapChipField_->GetNumBlockVirtical();
 	uint32_t mumBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
@@ -285,15 +257,52 @@ void GameScene::GenerateBlocks() {
 	for (uint32_t j = 0; j < numBlockVirtical; j++) {
 		for (uint32_t i = 0; i < mumBlockHorizontal; i++) {
 
-			// 引数の順番を (i, j) に修正！
-			if (mapChipField_->GetMapChipTypeByIndex(i, j) == MapChipType::kBlock) {
+			MapChipType mapChipType = mapChipField_->GetMapChipTypeByIndex(i, j);
 
+			switch (mapChipType) {
+			case MapChipType::kBlock: {
 				WorldTransform* worldTransform = new WorldTransform();
 				worldTransform->Initialize();
 
 				worldTransformBlocks_[j][i] = worldTransform;
 				// ここは (i, j) で合っています
 				worldTransformBlocks_[j][i]->translation_ = mapChipField_->GetMapChipPositionByIndex(i, j);
+			} break;
+			case MapChipType::kPlayer: {
+				Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(i, j);
+				player_->Initialize(modelPlayer_, modelAttack_, &cameraController_->GetCamera(), playerPosition);
+				player_->SetMapChipFiled(mapChipField_); // マップのデータをプレイヤーに渡す
+
+				// デスパーティクルもプレイヤーと同じ位置に潜ませておくならここ
+				deathParticles_->Initialize(modelParticl_, &cameraController_->GetCamera(), playerPosition);
+			} break;
+
+			case MapChipType::kEnemy: {
+
+				uint8_t subID = mapChipField_->GetMapChipSubIDByIndex(i, j);
+				Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(i, j);
+
+				switch (subID) {
+				case 0: {
+					// 通常敵
+					Enemy* newEnemy = new Enemy();
+					newEnemy->Initialize(modelEnemy_, &cameraController_->GetCamera(), enemyPosition);
+					newEnemy->SetGameScene(this);
+					enemyis_.push_back(newEnemy);
+				} break;
+
+				case 1: {
+					// シールド敵
+					ShieldEnemy* newShieldEnemy = new ShieldEnemy();
+					newShieldEnemy->Initialize(modelshieldEnemy_, &cameraController_->GetCamera(), enemyPosition);
+					newShieldEnemy->SetGameScene(this);
+					shieldEnemyis_.push_back(newShieldEnemy);
+				} break;
+
+				default:
+					break;
+				}
+			} break;
 			}
 		}
 	}
@@ -368,13 +377,9 @@ void GameScene::PlayeUpdate() {
 		hiteffect->Update();
 	}
 
-
 	for (GuardEffect* guardEffect : guardEffects_) {
 		guardEffect->Update();
 	}
-
-	
-
 
 	// 2. カメラコントローラーの更新（動いたプレイヤーをカメラが追いかける）
 	// ★これが抜けているので追加してください
@@ -415,7 +420,6 @@ void GameScene::PlayeUpdate() {
 		return false;
 	});
 
-
 	shieldEnemyis_.remove_if([](ShieldEnemy* shieldEnemy) {
 		if (shieldEnemy->isDead_) {
 			delete shieldEnemy;
@@ -424,7 +428,6 @@ void GameScene::PlayeUpdate() {
 		return false;
 	});
 
-
 	hitEffects_.remove_if([](HitEffect* hiteffect) {
 		if (hiteffect->isDead_) {
 			delete hiteffect;
@@ -432,7 +435,6 @@ void GameScene::PlayeUpdate() {
 		}
 		return false;
 	});
-
 
 	guardEffects_.remove_if([](GuardEffect* guardEffect) {
 		if (guardEffect->isDead_) {
