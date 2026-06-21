@@ -15,21 +15,27 @@ using namespace KamataEngine;
 
 namespace {
 
-// マップチップの種類と対応するデータの定義
-std::map<std::string, MapChipType> mapChipTable = {
-    {"0", MapChipType::kBlank},
-    {"1", MapChipType::kBlock},
+std::map<char, MapChipType> mapChipTable = {
+    {'G', MapChipType::kBlank},
+    {'B', MapChipType::kBlock},
+    {'P', MapChipType::kPlayer},
+    {'E', MapChipType::kEnemy},
+
 };
+
 
 } // namespace
 
 void MapChipField::ResetMapChipData() {
-
-	// マップチップのデータをリセット
-	mapChipData_->data.clear(); // 既存のデータをクリア
+	mapChipData_->data.clear();
 	mapChipData_->data.resize(kNumBlockVirtical);
-	for (std::vector<MapChipType>& mapChipDataLine : mapChipData_->data) {
+	for (std::vector<MapChipDataUnit>& mapChipDataLine : mapChipData_->data) {
 		mapChipDataLine.resize(kNumBlockHorizontal);
+		// ★追加：全て kBlank で初期化
+		for (MapChipDataUnit& unit : mapChipDataLine) {
+			unit.type = MapChipType::kBlank;
+			unit.subID = 0;
+		}
 	}
 }
 
@@ -60,26 +66,51 @@ void MapChipField::LoadMapChipCsv(const std ::string& filePath) {
 
 		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
 
+
 			std::string word;
 			std::getline(lineStream, word, ','); // カンマ区切りでの読み込み
+			word.erase(std::remove(word.begin(), word.end(), '\r'), word.end());
 
-			if (mapChipTable.contains(word)) {
-				mapChipData_->data[i][j] = mapChipTable[word];
+			if (word.empty()) {
+				continue;
 			}
+
+			if (!mapChipTable.contains(word[kChipType])) {
+				continue;
+			}
+
+			mapChipData_->data[i][j].type = mapChipTable[word[kChipType]];
+
+			if (word.size() <= kChipSubId) {
+				continue;
+			}
+
+			mapChipData_->data[i][j].subID = static_cast<uint8_t>(word[kChipSubId] - '0');
+
 		}
 	}
 }
 
 MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex) {
-	// インデックスからマップチップの種類を取得
-	if (xIndex < 0 || kNumBlockHorizontal - 1 < xIndex) {
+	if (xIndex >= kNumBlockHorizontal) { // ★ < 0を削除、>= に
 		return MapChipType::kBlank;
 	}
-	if (yIndex < 0 || kNumBlockVirtical - 1 < yIndex) {
+	if (yIndex >= kNumBlockVirtical) { // ★ < 0を削除、>= に
 		return MapChipType::kBlank;
 	}
 
-	return mapChipData_->data[yIndex][xIndex];
+	return mapChipData_->data[yIndex][xIndex].type;
+}
+
+uint8_t MapChipField::GetMapChipSubIDByIndex(uint32_t xIndex, uint32_t yIndex) {
+	if (xIndex >= kNumBlockHorizontal) { // ★ 修正
+		return 0;
+	}
+	if (yIndex >= kNumBlockVirtical) { // ★ 修正
+		return 0;
+	}
+
+	return mapChipData_->data[yIndex][xIndex].subID;
 }
 
 Vector3 MapChipField::GetMapChipPositionByIndex(
