@@ -15,7 +15,9 @@ using namespace KamataEngine;
 // コンストラクタ
 
 // 初期化処理
-void GameScene::Initialize() {
+void GameScene::Initialize(stageManager* stageDataManager_) {
+
+	stageManager_ = stageDataManager_;
 
 	// ゲームフェーズから開始
 	phase_ = Phase::kPlay;
@@ -69,7 +71,10 @@ void GameScene::Initialize() {
 
 #pragma region マップ・オブジェクトの初期化
 	// マップチップ読み込み
-	mapChipField_->LoadMapChipCsv("./Resources/map.csv");
+	const StageData& stageData = stageManager_->GetCurrentStageIndex();
+	std::string stageFileName = "Resources/fields/" + stageData.name + ".csv";
+	mapChipField_->LoadMapChipCsv(stageFileName);
+
 	GenerateFieldObjects();
 
 	fade_->Initialize();

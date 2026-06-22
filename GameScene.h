@@ -13,6 +13,7 @@
 #include "SkyDome.h"
 #include "HitEffect.h"
 #include "GuardEffect.h"
+#include "stageManager.h"
 
 #include <vector>
 #include "Fade.h"
@@ -55,7 +56,7 @@ public:
 	std::vector<std::vector<KamataEngine::WorldTransform*>> worldTransformBlocks_;
 
 	// 初期化関数
-	void Initialize();
+	void Initialize(stageManager* stageDataManager_);
 
 	// 更新処理関数
 	void Update();
@@ -89,6 +90,7 @@ public:
 	GuardEffect* guardEffect_ = nullptr;
 	std::list<GuardEffect*> guardEffects_;
 
+	stageManager* stageManager_ = nullptr;
 
 	void CreateHitEffect(const KamataEngine::Vector3 postion);
 	void CreateGuardEffect(const KamataEngine::Vector3 postion);
