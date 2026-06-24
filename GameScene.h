@@ -1,7 +1,9 @@
 #pragma once
 #include "KamataEngine.h"
+
 #include "Player.h"
 #include "CameraController.h"
+
 
 class GameScene 
 
@@ -31,5 +33,9 @@ private:
 	//playerなどのポインタ
 	Player* player_ = nullptr;
 	CameraController* cameraController_;
+	KamataEngine::DebugCamera* debugCamera_ = nullptr;
+	KamataEngine::Input* input_ = nullptr;
+
+	bool isDebugCameraActive_ = false;
 
 };
