@@ -19,7 +19,7 @@ void CameraController::Initialize() {
 	//カメラの初期化
 	camera_.Initialize();
 
-	camera_.fovAngleY = 0.6f;
+	//camera_.fovAngleY = 0.6f;
 
 	camera_.UpdateMatrix();
 

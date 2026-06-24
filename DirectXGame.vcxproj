@@ -267,6 +267,7 @@
     <None Include="Resources\shaders\Sprite.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AxisIndicator.h" />
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="Player.h" />

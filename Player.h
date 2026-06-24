@@ -4,7 +4,6 @@
 
 
 
-
 class Player {
 
 public:
@@ -78,48 +77,10 @@ private: // プライベート関数群とかのその他
 
 	// カメラ
 	KamataEngine::Camera* camera_ = nullptr;
-
-	// マップチップによるフィールド
-
-#pragma region プレイヤーの移動に関するもの
-
-	// 加速度を入れるもの
-	static inline const float kAcceleration = 0.1f;
-
-	// 減速率
-	static inline const float kAttenuation = 0.1f;
-
-	// 最大加速度の設定
-	static inline const float kLimitRunSpeed = 0.3f;
-
-	// 天井に当たった際の速度
-	static inline const float kBlank = 0.0f;
-
-	// 着地時の速度減衰率
-	static inline const float kAttenuationLanding = 0.01f;
-
-	// 壁接着時の速度減衰率
-	static inline const float kAttenuationWall = 0.1f;
-
-#pragma endregion
-
-#pragma region ジャンプに関するもの
-
-	// 重力加速度
-	static inline const float kGravityAcceleration = 0.03f;
-
-	// 最大落下速度
-	static inline const float kLimitFallSpeed = 0.5f;
-
-	// ジャンプ初速
-	static inline const float kJumpAcceleration = 0.6f;
-
-#pragma endregion
+	//キー入力
+	KamataEngine::Input* input_ = nullptr;
 
 
-	// 旋回時間＜秒＞
-	static inline const float kTimeTrun = 0.3f;
-	static constexpr float kAttackSpeed = 0.8f;
 	// プライベート関数
 	void MovePlayer();
 
