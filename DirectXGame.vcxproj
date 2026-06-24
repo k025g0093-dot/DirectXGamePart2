@@ -269,7 +269,6 @@
   <ItemGroup>
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="GameScene.h" />
-    <ClInclude Include="MyMath.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="SkyDome.h" />
   </ItemGroup>

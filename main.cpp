@@ -1,10 +1,9 @@
 #include "KamataEngine.h"
-
-
+#include "GameScene.h"
 #include <Windows.h>
 
 using namespace KamataEngine;
-
+GameScene* gameScene = nullptr;
 
 
 
@@ -21,6 +20,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
 	ImGuiManager* imguiManager = ImGuiManager::GetInstance();
+
+	gameScene = new GameScene();
 
 
 
@@ -42,7 +43,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		// ✅ デバッグキー入力は毎フレーム・シーン切り替えより前にチェック
 		
-
+		gameScene->Update();
 
 
 		//======================================================================
@@ -57,8 +58,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		dxCommon->PreDraw();
 
-
 		imguiManager->Draw();
+		gameScene->Draw();
+
 
 		dxCommon->PostDraw();
 
@@ -72,9 +74,10 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	}
 
 	//---------------------------------------------------
-	// 解放
+	// 解放エクササイズ
 	//---------------------------------------------------
-
+	delete gameScene;
+	gameScene = nullptr;
 
 	KamataEngine::Finalize();
 	return 0;
