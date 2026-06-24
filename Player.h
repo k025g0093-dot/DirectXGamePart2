@@ -23,12 +23,7 @@ public:
 
 #pragma endregion
 
-#pragma region プレイヤーのジャンプに関する処理
 
-	// プレイヤーのジャンプに関するもの
-	bool onGround_ = true;
-
-#pragma endregion
 
 	KamataEngine::Model* modelAttack_ = nullptr;
 	KamataEngine::WorldTransform worldTransformAttack_;
@@ -38,7 +33,7 @@ public:
 	~Player();
 
 	// 初期化関数
-	void Initialize(KamataEngine::Model* model, KamataEngine::Model* modelAttack, KamataEngine::Camera* camera, const KamataEngine::Vector3& position);
+	void Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position);
 
 	// 更新処理
 	void Updata();
