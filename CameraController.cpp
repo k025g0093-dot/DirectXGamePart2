@@ -86,5 +86,3 @@ Vector3 CameraController::Lerp(const Vector3& v1, const Vector3& v2, float t) {
 	return res;
 }
 
-//CameraController::~CameraController() { 
-//}
