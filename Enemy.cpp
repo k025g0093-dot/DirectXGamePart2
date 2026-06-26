@@ -1,5 +1,6 @@
 #include "Enemy.h"
 #include "UpdateWorldTransform.h"
+#include"Player.h"
 
 using namespace KamataEngine;
 
@@ -85,11 +86,44 @@ void Enemy::UpdateLeave() {
 
 void Enemy::EnemyShotUpdate() {
 
-	const float kBulletSpeed = -1.0f;
-	Vector3 velocity(0, 0, kBulletSpeed);
-	velocity = TransformNolmar(velocity, worldTransform_.matWorld_);
+	assert(player_);
+
+	const float kBulletSpeed = 0.5f;
+
+	Vector3 directionToPlayer = player_->GetWotldPosition() - GetWotldPosition();
+
+	float length = sqrt(
+		directionToPlayer.x * directionToPlayer.x 
+		+ directionToPlayer.y * directionToPlayer.y 
+		+ directionToPlayer.z * directionToPlayer.z
+	);
+
+	// ゼロ除算チェック
+	if (length > 0.0001f) {
+		directionToPlayer.x /= length;
+		directionToPlayer.y /= length;
+		directionToPlayer.z /= length;
+	}
+
+	// 速度 = 正規化された方向 × スピード
+	Vector3 velocity = {
+		directionToPlayer.x * kBulletSpeed,
+		directionToPlayer.y * kBulletSpeed,
+		directionToPlayer.z * kBulletSpeed
+	};
 
 	EnemyBullet* newBullet = new EnemyBullet();
 	newBullet->Initialize(model_, worldTransform_.translation_, velocity);
 	bullets_.push_back(newBullet);
+}
+
+
+Vector3 Enemy::GetWotldPosition() {
+	Vector3 worldPos{};
+
+	worldPos.x = worldTransform_.translation_.x;
+	worldPos.y = worldTransform_.translation_.y;
+	worldPos.z = worldTransform_.translation_.z;
+
+	return worldPos;
 }
