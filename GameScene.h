@@ -2,6 +2,7 @@
 #include "KamataEngine.h"
 
 #include "Player.h"
+#include "Enemy.h"
 #include "CameraController.h"
 
 
@@ -25,13 +26,14 @@ public:
 
 	KamataEngine::Model* model_ = nullptr;
 	KamataEngine::Model* playerModel_ = nullptr;
-
+	KamataEngine::Model* enemyModel_ = nullptr;
 	//この先に小分けにしていく関数などを書く
 
 private:
 	
 	//playerなどのポインタ
 	Player* player_ = nullptr;
+	Enemy* enemy_ = nullptr;
 	CameraController* cameraController_;
 	KamataEngine::DebugCamera* debugCamera_ = nullptr;
 	KamataEngine::Input* input_ = nullptr;

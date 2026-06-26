@@ -13,10 +13,13 @@ void GameScene::Initialize() {
 
 	// プレイヤーのインスタンス
 	player_ = new Player();
+	enemy_ = new Enemy();
+
 	cameraController_ = new CameraController();
 
 	// プレイヤーのモデル生成
 	playerModel_ = Model::CreateFromOBJ("player", true);
+	enemyModel_ = Model::CreateFromOBJ("enemy", true);
 
 	debugCamera_ = new DebugCamera(1280, 720);
 
@@ -33,6 +36,10 @@ void GameScene::Initialize() {
 
 	Vector3 playerPosition = {0, 0, 0};
 	player_->Initialize(playerModel_, &camera_, playerPosition);
+
+	Vector3 enemyPosition = {0, 0, 10};
+	enemy_->Initialize(enemyModel_, &camera_, enemyPosition);
+
 	cameraController_->Reset();
 
 	//キー入力の初期化
@@ -61,6 +68,7 @@ void GameScene::Update() {
 	}
 
 	player_->Updata();
+	enemy_->Update();
 	cameraController_->Update();
 }
 
@@ -68,7 +76,7 @@ void GameScene::Draw() {
 	Model::PreDraw();
 
 	player_->Draw();
-
+	enemy_->Draw();
 	Model::PostDraw();
 }
 
@@ -76,8 +84,10 @@ GameScene::~GameScene() {
 
 	// ポインタのデリート
 	delete player_;
+	delete enemy_;
 	// モデルのデリート
 	delete playerModel_;
+	delete enemyModel_;
 	delete debugCamera_;
 }
 
