@@ -8,6 +8,9 @@ enum class Phase {
 	Leave,    // 離脱
 };
 
+
+class Player;
+
 class Enemy {
 
 public:
@@ -19,9 +22,14 @@ public:
 	bool isDead_ = false;
 	bool IsDead() const { return isDead_; };
 
-private:
-	// ワールドトランスフォーム
+
+	Player* player_ = nullptr;
+	void SetPlayer(Player* player) { player_ = player; }
+	KamataEngine::Vector3 GetWotldPosition();
 	KamataEngine::WorldTransform worldTransform_;
+
+private:
+
 	// 3Dモデルで必要なモデルの呼び出し
 	KamataEngine::Model* model_ = nullptr;
 	// カメラ

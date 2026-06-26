@@ -44,8 +44,8 @@ public:
 	bool isDead_=false;
 	bool IsDead() const { return isDead_; };
 
-	bool isKnockBack_= false;
-	void IsKnockBack();
+
+	KamataEngine::Vector3 GetWotldPosition();
 
 
 	// 慣性系の物
