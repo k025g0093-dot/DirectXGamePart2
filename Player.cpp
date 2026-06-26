@@ -11,10 +11,13 @@
 #endif
 
 using namespace KamataEngine;
+
 Player::Player() {}
 bool isHit = false;
 void Player::Initialize(
-    KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position
+    KamataEngine::Model* model,
+	KamataEngine::Camera* camera,
+	const KamataEngine::Vector3& position
 
 ) {
 
@@ -27,38 +30,43 @@ void Player::Initialize(
 	assert(model);
 	model_ = model;
 
-	//ワールドトランスフォームの初期化
+	// ワールドトランスフォームの初期化
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
 	worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
 	camera_ = camera;
 
-	//キー入力の初期化
+	// キー入力の初期化
 	input_ = Input::GetInstance();
 }
 
 void Player::Updata() {
 
 	MovePlayer();
-
-
-	worldTransform_.matWorld_ = MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
-	worldTransform_.TransferMatrix();
+	Rotate();
+	Attack();
+	if (bullet_) {
+		bullet_->Update();
+	}
+	UpdateWorldTransform(worldTransform_);
 }
 
-void Player::Draw() { model_->Draw(worldTransform_, *camera_); }
+void Player::Draw() { 
+	if (bullet_) {
+		bullet_->Draw(camera_);
+	}
+	model_->Draw(worldTransform_, *camera_); 
+}
 
 Player::~Player() {}
 
 void Player::MovePlayer() {
 
-
-
 	Vector3 move = {0, 0, 0};
-	//移動速度
+	// 移動速度
 	const float kCharacteaSpeed = 0.2f;
 
-	//移動制限座標
+	// 移動制限座標
 	const float kMoveLimitX = 13;
 	const float kMoveLimitY = 7;
 
@@ -70,19 +78,19 @@ void Player::MovePlayer() {
 
 #ifdef _DEBUG
 	ImGui::Begin("PlayerPostion");
-	ImGui::DragFloat3("position",&worldTransform_.translation_.x,0.01f,-100.0f,100.0f);
+	ImGui::DragFloat3("position", &worldTransform_.translation_.x, 0.01f, -100.0f, 100.0f);
 
 	ImGui::End();
 #endif
 
-	//横移動
+	// 横移動
 	if (input_->PushKey(DIK_LEFT) || input_->PushKey(DIK_A)) {
 		move.x -= kCharacteaSpeed;
 	} else if (input_->PushKey(DIK_RIGHT) || input_->PushKey(DIK_D)) {
 		move.x += kCharacteaSpeed;
 	}
 
-	//上下移動
+	// 上下移動
 	if (input_->PushKey(DIK_UP) || input_->PushKey(DIK_W)) {
 		move.y += kCharacteaSpeed;
 	} else if (input_->PushKey(DIK_DOWN) || input_->PushKey(DIK_S)) {
@@ -90,5 +98,26 @@ void Player::MovePlayer() {
 	}
 
 	worldTransform_.translation_ += move;
+}
+
+//回転
+void Player::Rotate() {
+
+	const float kRotSpeed = 0.02f;
+	if (input_->PushKey(DIK_Q)) {
+		worldTransform_.rotation_.y -= kRotSpeed;
+	} else if (input_->PushKey(DIK_E)) {
+		worldTransform_.rotation_.y += kRotSpeed;
+	}
+}
+
+//攻撃
+void Player::Attack() {
+
+	if (input_->TriggerKey(DIK_SPACE)) {
+		playerBullet* newBullet = new playerBullet();
+		newBullet->Initialize(model_, worldTransform_.translation_);
+		bullet_ = newBullet;
+	}
 
 }
