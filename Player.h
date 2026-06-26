@@ -1,8 +1,7 @@
 #pragma once
-
 #include "KamataEngine.h"
-
-
+#include "UpdateWorldTransform.h"
+#include "playerBullet.h"
 
 class Player {
 
@@ -39,6 +38,7 @@ public:
 
 	void Draw();
 	
+	void Rotate();
 
 	bool isDead_=false;
 	bool IsDead() const { return isDead_; };
@@ -73,6 +73,8 @@ public:
 	// テクスチャハンドル
 	uint32_t textureHandle_;
 
+	playerBullet* bullet_=nullptr;
+	
 private: // プライベート関数群とかのその他
 
 	// カメラ
@@ -83,6 +85,6 @@ private: // プライベート関数群とかのその他
 
 	// プライベート関数
 	void MovePlayer();
-
+	void Attack();
 	
 };

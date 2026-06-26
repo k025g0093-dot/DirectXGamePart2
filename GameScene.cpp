@@ -80,3 +80,4 @@ GameScene::~GameScene() {
 	delete playerModel_;
 	delete debugCamera_;
 }
+
