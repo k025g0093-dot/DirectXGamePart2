@@ -14,12 +14,14 @@ void GameScene::Initialize() {
 	// プレイヤーのインスタンス
 	player_ = new Player();
 	enemy_ = new Enemy();
+	skyDome_ = new SkyDome();
 
 	cameraController_ = new CameraController();
 
 	// プレイヤーのモデル生成
 	playerModel_ = Model::CreateFromOBJ("player", true);
 	enemyModel_ = Model::CreateFromOBJ("enemy", true);
+	skyDomeModel_ = Model::CreateFromOBJ("skydome", true);
 
 	debugCamera_ = new DebugCamera(1280, 720);
 
@@ -39,6 +41,8 @@ void GameScene::Initialize() {
 
 	Vector3 enemyPosition = {0, 0, 10};
 	enemy_->Initialize(enemyModel_, &camera_, enemyPosition);
+
+	skyDome_->Initialize(skyDomeModel_);
 
 	cameraController_->Reset();
 
@@ -68,6 +72,7 @@ void GameScene::Update() {
 	} else {
 		camera_.UpdateMatrix();
 	}
+	skyDome_->Update();
 
 	player_->Updata();
 	enemy_->Update();
@@ -79,6 +84,8 @@ void GameScene::Update() {
 void GameScene::Draw() {
 	Model::PreDraw();
 
+	skyDome_->Draw(&camera_);
+
 	player_->Draw();
 	enemy_->Draw();
 	Model::PostDraw();
@@ -86,12 +93,17 @@ void GameScene::Draw() {
 
 GameScene::~GameScene() {
 
+
+
 	// ポインタのデリート
 	delete player_;
 	delete enemy_;
+	delete skyDome_;
 	// モデルのデリート
 	delete playerModel_;
 	delete enemyModel_;
+	delete skyDomeModel_;
+
 	delete debugCamera_;
 }
 
