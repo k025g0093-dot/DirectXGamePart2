@@ -2,6 +2,7 @@
 #include "KamataEngine.h"
 #include "UpdateWorldTransform.h"
 #include "playerBullet.h"
+#include <list>
 
 class Player {
 
@@ -73,8 +74,11 @@ public:
 	// テクスチャハンドル
 	uint32_t textureHandle_;
 
+	//プレイヤーの弾
 	playerBullet* bullet_=nullptr;
-	
+	std::list<playerBullet*> bullets_;
+
+
 private: // プライベート関数群とかのその他
 
 	// カメラ
