@@ -42,16 +42,14 @@ void GameScene::Initialize() {
 
 	cameraController_->Reset();
 
-	//キー入力の初期化
+	// キー入力の初期化
 	input_ = Input::GetInstance();
 	// ブレンダーみたいな表示線の関数初期化
 	AxisIndicator::GetInstance()->SetVisible(true);
 	AxisIndicator::GetInstance()->SetTargetCamera(&debugCamera_->GetCamera());
 
-
-	//敵に自キャラのアドレスを渡す
+	// 敵に自キャラのアドレスを渡す
 	enemy_->SetPlayer(player_);
-
 }
 
 void GameScene::Update() {
@@ -74,6 +72,8 @@ void GameScene::Update() {
 	player_->Updata();
 	enemy_->Update();
 	cameraController_->Update();
+
+	CheckAllCollisions();
 }
 
 void GameScene::Draw() {
@@ -95,3 +95,65 @@ GameScene::~GameScene() {
 	delete debugCamera_;
 }
 
+void GameScene::CheckAllCollisions() {
+
+	Vector3 posA, posB;
+
+	// プレイヤーの弾のリストの取得
+	const std::list<playerBullet*>& playerBullets = player_->GetBullets();
+
+	// プレイヤーの弾のリストの取得
+	const std::list<EnemyBullet*>& enemyBullets = enemy_->GetBullets();
+
+	// 当たり判定の実装
+	posA = player_->GetWorldPosition();
+	for (EnemyBullet* bullet : enemyBullets) {
+		posB = bullet->GetWorldPosition();
+
+		Vector3 diff = posA - posB;
+		
+		// 距離を計算
+		float distance = sqrt(
+			diff.x * diff.x + 
+			diff.y * diff.y + 
+			diff.z * diff.z
+		);
+		float playerRadius = 1.0f;
+		float bulletRadius = 0.5f;
+
+		if (distance < playerRadius + bulletRadius) {
+			//地キャラの衝突判定
+			player_->OnCollision();
+			//敵弾の衝突判定のコールバック
+			bullet->OnCollision();
+		}
+	}
+
+
+	// 当たり判定の実装
+	posA = enemy_->GetWorldPosition();
+	for (playerBullet* bullet : playerBullets) {
+		posB = bullet->GetWorldPosition();
+
+		Vector3 diff = posA - posB;
+		
+		// 距離を計算
+		float distance = sqrt(
+			diff.x * diff.x + 
+			diff.y * diff.y + 
+			diff.z * diff.z
+		);
+		float playerRadius = 1.0f;
+		float bulletRadius = 0.5f;
+
+		if (distance < playerRadius + bulletRadius) {
+			//地キャラの衝突判定
+			enemy_->OnCollision();
+			//敵弾の衝突判定のコールバック
+			bullet->OnCollision();
+		}
+	}
+
+
+
+}

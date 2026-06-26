@@ -24,6 +24,8 @@ public:
 	void Update();
 	void Draw();
 
+	void CheckAllCollisions();
+
 	KamataEngine::Model* model_ = nullptr;
 	KamataEngine::Model* playerModel_ = nullptr;
 	KamataEngine::Model* enemyModel_ = nullptr;

@@ -90,7 +90,7 @@ void Enemy::EnemyShotUpdate() {
 
 	const float kBulletSpeed = 0.5f;
 
-	Vector3 directionToPlayer = player_->GetWotldPosition() - GetWotldPosition();
+	Vector3 directionToPlayer = player_->GetWorldPosition() - GetWorldPosition();
 
 	float length = sqrt(
 		directionToPlayer.x * directionToPlayer.x 
@@ -117,8 +117,9 @@ void Enemy::EnemyShotUpdate() {
 	bullets_.push_back(newBullet);
 }
 
+void Enemy::OnCollision() {};
 
-Vector3 Enemy::GetWotldPosition() {
+Vector3 Enemy::GetWorldPosition() {
 	Vector3 worldPos{};
 
 	worldPos.x = worldTransform_.translation_.x;

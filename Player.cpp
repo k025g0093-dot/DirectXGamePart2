@@ -139,7 +139,7 @@ void Player::Attack() {
 
 }
 
-Vector3 Player::GetWotldPosition() {
+Vector3 Player::GetWorldPosition() {
 	Vector3 worldPos{};
 
 	worldPos.x = worldTransform_.translation_.x;
@@ -149,4 +149,5 @@ Vector3 Player::GetWotldPosition() {
 	return worldPos;
 }
 
+void Player::OnCollision() {};
 
