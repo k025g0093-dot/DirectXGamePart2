@@ -2,11 +2,7 @@
 
 using namespace KamataEngine;
 
-
-void playerBullet::Initialize(
-	Model* model,
-	const Vector3& position
-) {
+void playerBullet::Initialize(Model* model, const Vector3& position, const Vector3& velocity) {
 
 	assert(model);
 	model_ = model;
@@ -15,16 +11,20 @@ void playerBullet::Initialize(
 
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
-
+	velocity_ = velocity;
 }
 
 void playerBullet::Update() {
+
+	if (--deathTime_ <= 0) {
+		isDead_ = true;
+	}
+
+	worldTransform_.translation_.x += velocity_.x;
+	worldTransform_.translation_.y += velocity_.y;
+	worldTransform_.translation_.z += velocity_.z;
+
 	UpdateWorldTransform(worldTransform_);
 }
 
-
-void playerBullet::Draw(
-	const Camera* camera
-) { 
-	model_->Draw(worldTransform_, *camera); 
-}
+void playerBullet::Draw(const Camera* camera) { model_->Draw(worldTransform_, *camera); }
