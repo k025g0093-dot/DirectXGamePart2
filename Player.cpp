@@ -45,20 +45,24 @@ void Player::Updata() {
 	MovePlayer();
 	Rotate();
 	Attack();
-	if (bullet_) {
-		bullet_->Update();
+	for (playerBullet*bullet:bullets_){
+		bullet->Update();
 	}
 	UpdateWorldTransform(worldTransform_);
 }
 
 void Player::Draw() { 
-	if (bullet_) {
-		bullet_->Draw(camera_);
+	for (playerBullet* bullet : bullets_) {
+		bullet->Draw(camera_);
 	}
 	model_->Draw(worldTransform_, *camera_); 
 }
 
-Player::~Player() {}
+Player::~Player() {
+	for (playerBullet* bullet : bullets_) {
+		delete bullet;
+	}
+}
 
 void Player::MovePlayer() {
 
@@ -115,9 +119,11 @@ void Player::Rotate() {
 void Player::Attack() {
 
 	if (input_->TriggerKey(DIK_SPACE)) {
+		
+
 		playerBullet* newBullet = new playerBullet();
 		newBullet->Initialize(model_, worldTransform_.translation_);
-		bullet_ = newBullet;
+		bullets_.push_back( newBullet);
 	}
 
 }
