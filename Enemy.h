@@ -3,8 +3,8 @@
 #include "MyMath.h"
 
 enum class Phase {
-	Approach,//接近
-	Leave,//離脱
+	Approach, // 接近
+	Leave,    // 離脱
 };
 
 class Enemy {
@@ -25,10 +25,8 @@ private:
 	KamataEngine::Vector3 velocity_ = {};
 
 private:
-
-	Phase phase_ =Phase::Approach;
+	Phase phase_ = Phase::Approach;
 
 	void UpdateApproach();
 	void UpdateLeave();
-
 };
