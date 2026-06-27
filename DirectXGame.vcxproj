@@ -168,6 +168,7 @@
     <ClCompile Include="EnemyBullet.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="playerBullet.cpp" />
     <ClCompile Include="SkyDome.cpp" />
@@ -277,6 +278,7 @@
     <ClInclude Include="EnemyBullet.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="MyMath.h" />
+    <ClInclude Include="Plane.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="playerBullet.h" />
     <ClInclude Include="SkyDome.h" />

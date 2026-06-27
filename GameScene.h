@@ -1,5 +1,6 @@
 #pragma once
 #include "KamataEngine.h"
+#include "Plane.h"
 
 #include "CameraController.h"
 #include "Enemy.h"
@@ -29,6 +30,8 @@ public:
 	KamataEngine::Model* playerModel_ = nullptr;
 	KamataEngine::Model* enemyModel_ = nullptr;
 	KamataEngine::Model* skyDomeModel_=nullptr;
+	KamataEngine::Model* planeModel_ = nullptr;
+
 	// この先に小分けにしていく関数などを書く
 
 	private :
@@ -37,6 +40,7 @@ public:
 	Player* player_ = nullptr;
 	Enemy* enemy_ = nullptr;
 	SkyDome* skyDome_ = nullptr;
+	Plane* plane_ = nullptr;
 
 	CameraController* cameraController_;
 	KamataEngine::DebugCamera* debugCamera_ = nullptr;

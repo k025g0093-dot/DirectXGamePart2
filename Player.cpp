@@ -118,9 +118,9 @@ void Player::Rotate() {
 
 	const float kRotSpeed = 0.02f;
 	if (input_->PushKey(DIK_Q)) {
-		worldTransform_.rotation_.y -= kRotSpeed;
-	} else if (input_->PushKey(DIK_E)) {
 		worldTransform_.rotation_.y += kRotSpeed;
+	} else if (input_->PushKey(DIK_E)) {
+		worldTransform_.rotation_.y -= kRotSpeed;
 	}
 }
 

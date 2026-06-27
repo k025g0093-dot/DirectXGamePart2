@@ -15,6 +15,7 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	enemy_ = new Enemy();
 	skyDome_ = new SkyDome();
+	plane_ = new Plane();
 
 	cameraController_ = new CameraController();
 
@@ -22,6 +23,7 @@ void GameScene::Initialize() {
 	playerModel_ = Model::CreateFromOBJ("player", true);
 	enemyModel_ = Model::CreateFromOBJ("enemy", true);
 	skyDomeModel_ = Model::CreateFromOBJ("skydome", true);
+	planeModel_ = Model::CreateFromOBJ("plane", true);
 
 	debugCamera_ = new DebugCamera(1280, 720);
 
@@ -43,6 +45,7 @@ void GameScene::Initialize() {
 	enemy_->Initialize(enemyModel_, &camera_, enemyPosition);
 
 	skyDome_->Initialize(skyDomeModel_);
+	plane_->Initialize(planeModel_);
 
 	cameraController_->Reset();
 
@@ -72,7 +75,10 @@ void GameScene::Update() {
 	} else {
 		camera_.UpdateMatrix();
 	}
+
+
 	skyDome_->Update();
+	plane_->Update();
 
 	player_->Updata();
 	enemy_->Update();
@@ -84,8 +90,9 @@ void GameScene::Update() {
 void GameScene::Draw() {
 	Model::PreDraw();
 
+	plane_->Draw(&camera_);
 	skyDome_->Draw(&camera_);
-
+	
 	player_->Draw();
 	enemy_->Draw();
 	Model::PostDraw();
@@ -99,11 +106,12 @@ GameScene::~GameScene() {
 	delete player_;
 	delete enemy_;
 	delete skyDome_;
+	delete plane_;
 	// モデルのデリート
 	delete playerModel_;
 	delete enemyModel_;
 	delete skyDomeModel_;
-
+	delete planeModel_;
 	delete debugCamera_;
 }
 
