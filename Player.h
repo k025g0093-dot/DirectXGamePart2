@@ -45,7 +45,7 @@ public:
 	bool IsDead() const { return isDead_; };
 
 
-	KamataEngine::Vector3 GetWotldPosition();
+	KamataEngine::Vector3 GetWorldPosition();
 
 
 	// 慣性系の物
@@ -78,6 +78,10 @@ public:
 	playerBullet* bullet_=nullptr;
 	std::list<playerBullet*> bullets_;
 
+	//当たり判定のコールバック
+	void OnCollision();
+
+	const std::list<playerBullet*>& GetBullets() const { return bullets_; }
 
 private: // プライベート関数群とかのその他
 

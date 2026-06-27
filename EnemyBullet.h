@@ -13,6 +13,11 @@ public:
 	void Draw(const KamataEngine::Camera* camera);
 	bool IsDead() const { return isDead_; }
 
+
+	// 当たり判定のコールバック
+	void OnCollision();
+	KamataEngine::Vector3 GetWorldPosition();
+
 private:
 
 	// ワールドトランスフォーム

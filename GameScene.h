@@ -1,16 +1,16 @@
 #pragma once
 #include "KamataEngine.h"
+#include "Plane.h"
 
-#include "Player.h"
-#include "Enemy.h"
 #include "CameraController.h"
+#include "Enemy.h"
+#include "Player.h"
+#include "SkyDome.h"
 
-
-class GameScene 
+class GameScene
 
 {
 public:
-
 	// ワールドトランスフォーム
 	KamataEngine::WorldTransform worldTransform_;
 	// カメラ
@@ -19,25 +19,32 @@ public:
 	GameScene();
 	~GameScene();
 
-	//大枠の初期化、アップデート、描画処理
+	// 大枠の初期化、アップデート、描画処理
 	void Initialize();
 	void Update();
 	void Draw();
 
+	void CheckAllCollisions();
+
 	KamataEngine::Model* model_ = nullptr;
 	KamataEngine::Model* playerModel_ = nullptr;
 	KamataEngine::Model* enemyModel_ = nullptr;
-	//この先に小分けにしていく関数などを書く
+	KamataEngine::Model* skyDomeModel_=nullptr;
+	KamataEngine::Model* planeModel_ = nullptr;
 
-private:
-	
-	//playerなどのポインタ
+	// この先に小分けにしていく関数などを書く
+
+	private :
+
+	// playerなどのポインタ
 	Player* player_ = nullptr;
 	Enemy* enemy_ = nullptr;
+	SkyDome* skyDome_ = nullptr;
+	Plane* plane_ = nullptr;
+
 	CameraController* cameraController_;
 	KamataEngine::DebugCamera* debugCamera_ = nullptr;
 	KamataEngine::Input* input_ = nullptr;
 
 	bool isDebugCameraActive_ = false;
-
 };

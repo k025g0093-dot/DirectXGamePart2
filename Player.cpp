@@ -118,9 +118,9 @@ void Player::Rotate() {
 
 	const float kRotSpeed = 0.02f;
 	if (input_->PushKey(DIK_Q)) {
-		worldTransform_.rotation_.y -= kRotSpeed;
-	} else if (input_->PushKey(DIK_E)) {
 		worldTransform_.rotation_.y += kRotSpeed;
+	} else if (input_->PushKey(DIK_E)) {
+		worldTransform_.rotation_.y -= kRotSpeed;
 	}
 }
 
@@ -139,7 +139,7 @@ void Player::Attack() {
 
 }
 
-Vector3 Player::GetWotldPosition() {
+Vector3 Player::GetWorldPosition() {
 	Vector3 worldPos{};
 
 	worldPos.x = worldTransform_.translation_.x;
@@ -149,4 +149,5 @@ Vector3 Player::GetWotldPosition() {
 	return worldPos;
 }
 
+void Player::OnCollision() {};
 

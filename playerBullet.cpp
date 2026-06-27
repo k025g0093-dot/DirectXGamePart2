@@ -27,4 +27,18 @@ void playerBullet::Update() {
 	UpdateWorldTransform(worldTransform_);
 }
 
+void playerBullet::OnCollision() { 
+	isDead_ = true; 
+}
+
 void playerBullet::Draw(const Camera* camera) { model_->Draw(worldTransform_, *camera); }
+
+Vector3 playerBullet::GetWorldPosition() {
+	Vector3 worldPos{};
+
+	worldPos.x = worldTransform_.translation_.x;
+	worldPos.y = worldTransform_.translation_.y;
+	worldPos.z = worldTransform_.translation_.z;
+
+	return worldPos;
+}

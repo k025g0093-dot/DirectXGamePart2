@@ -14,12 +14,16 @@ void GameScene::Initialize() {
 	// プレイヤーのインスタンス
 	player_ = new Player();
 	enemy_ = new Enemy();
+	skyDome_ = new SkyDome();
+	plane_ = new Plane();
 
 	cameraController_ = new CameraController();
 
 	// プレイヤーのモデル生成
 	playerModel_ = Model::CreateFromOBJ("player", true);
 	enemyModel_ = Model::CreateFromOBJ("enemy", true);
+	skyDomeModel_ = Model::CreateFromOBJ("skydome", true);
+	planeModel_ = Model::CreateFromOBJ("plane", true);
 
 	debugCamera_ = new DebugCamera(1280, 720);
 
@@ -40,18 +44,19 @@ void GameScene::Initialize() {
 	Vector3 enemyPosition = {0, 0, 10};
 	enemy_->Initialize(enemyModel_, &camera_, enemyPosition);
 
+	skyDome_->Initialize(skyDomeModel_);
+	plane_->Initialize(planeModel_);
+
 	cameraController_->Reset();
 
-	//キー入力の初期化
+	// キー入力の初期化
 	input_ = Input::GetInstance();
 	// ブレンダーみたいな表示線の関数初期化
 	AxisIndicator::GetInstance()->SetVisible(true);
 	AxisIndicator::GetInstance()->SetTargetCamera(&debugCamera_->GetCamera());
 
-
-	//敵に自キャラのアドレスを渡す
+	// 敵に自キャラのアドレスを渡す
 	enemy_->SetPlayer(player_);
-
 }
 
 void GameScene::Update() {
@@ -71,14 +76,23 @@ void GameScene::Update() {
 		camera_.UpdateMatrix();
 	}
 
+
+	skyDome_->Update();
+	plane_->Update();
+
 	player_->Updata();
 	enemy_->Update();
 	cameraController_->Update();
+
+	CheckAllCollisions();
 }
 
 void GameScene::Draw() {
 	Model::PreDraw();
 
+	plane_->Draw(&camera_);
+	skyDome_->Draw(&camera_);
+	
 	player_->Draw();
 	enemy_->Draw();
 	Model::PostDraw();
@@ -86,12 +100,80 @@ void GameScene::Draw() {
 
 GameScene::~GameScene() {
 
+
+
 	// ポインタのデリート
 	delete player_;
 	delete enemy_;
+	delete skyDome_;
+	delete plane_;
 	// モデルのデリート
 	delete playerModel_;
 	delete enemyModel_;
+	delete skyDomeModel_;
+	delete planeModel_;
 	delete debugCamera_;
 }
 
+void GameScene::CheckAllCollisions() {
+
+	Vector3 posA, posB;
+
+	// プレイヤーの弾のリストの取得
+	const std::list<playerBullet*>& playerBullets = player_->GetBullets();
+
+	// プレイヤーの弾のリストの取得
+	const std::list<EnemyBullet*>& enemyBullets = enemy_->GetBullets();
+
+	// 当たり判定の実装
+	posA = player_->GetWorldPosition();
+	for (EnemyBullet* bullet : enemyBullets) {
+		posB = bullet->GetWorldPosition();
+
+		Vector3 diff = posA - posB;
+		
+		// 距離を計算
+		float distance = sqrt(
+			diff.x * diff.x + 
+			diff.y * diff.y + 
+			diff.z * diff.z
+		);
+		float playerRadius = 1.0f;
+		float bulletRadius = 0.5f;
+
+		if (distance < playerRadius + bulletRadius) {
+			//地キャラの衝突判定
+			player_->OnCollision();
+			//敵弾の衝突判定のコールバック
+			bullet->OnCollision();
+		}
+	}
+
+
+	// 当たり判定の実装
+	posA = enemy_->GetWorldPosition();
+	for (playerBullet* bullet : playerBullets) {
+		posB = bullet->GetWorldPosition();
+
+		Vector3 diff = posA - posB;
+		
+		// 距離を計算
+		float distance = sqrt(
+			diff.x * diff.x + 
+			diff.y * diff.y + 
+			diff.z * diff.z
+		);
+		float playerRadius = 1.0f;
+		float bulletRadius = 0.5f;
+
+		if (distance < playerRadius + bulletRadius) {
+			//地キャラの衝突判定
+			enemy_->OnCollision();
+			//敵弾の衝突判定のコールバック
+			bullet->OnCollision();
+		}
+	}
+
+
+
+}

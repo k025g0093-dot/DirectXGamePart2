@@ -25,8 +25,14 @@ public:
 
 	Player* player_ = nullptr;
 	void SetPlayer(Player* player) { player_ = player; }
-	KamataEngine::Vector3 GetWotldPosition();
+	KamataEngine::Vector3 GetWorldPosition();
 	KamataEngine::WorldTransform worldTransform_;
+
+	// 当たり判定のコールバック
+	void OnCollision();
+
+	const std::list<EnemyBullet*>& GetBullets() const { return bullets_; }
+
 
 private:
 
@@ -39,6 +45,8 @@ private:
 
 	EnemyBullet* bullet_ = nullptr;
 	std::list<EnemyBullet*> bullets_;
+
+
 
 private:
 	Phase phase_ = Phase::Approach;
