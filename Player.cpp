@@ -15,9 +15,7 @@ using namespace KamataEngine;
 Player::Player() {}
 bool isHit = false;
 void Player::Initialize(
-    KamataEngine::Model* model,
-	KamataEngine::Camera* camera,
-	const KamataEngine::Vector3& position
+    KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position
 
 ) {
 
@@ -54,17 +52,18 @@ void Player::Updata() {
 		return false;
 	});
 
-	for (playerBullet*bullet:bullets_){
+	for (playerBullet* bullet : bullets_) {
 		bullet->Update();
 	}
+
 	UpdateWorldTransform(worldTransform_);
 }
 
-void Player::Draw() { 
+void Player::Draw() {
 	for (playerBullet* bullet : bullets_) {
 		bullet->Draw(camera_);
 	}
-	model_->Draw(worldTransform_, *camera_); 
+	model_->Draw(worldTransform_, *camera_);
 }
 
 Player::~Player() {
@@ -113,7 +112,7 @@ void Player::MovePlayer() {
 	worldTransform_.translation_ += move;
 }
 
-//回転
+// 回転
 void Player::Rotate() {
 
 	const float kRotSpeed = 0.02f;
@@ -124,19 +123,19 @@ void Player::Rotate() {
 	}
 }
 
-//攻撃
+// 攻撃
 void Player::Attack() {
 
 	if (input_->TriggerKey(DIK_SPACE)) {
-		const float kBulletSpeed=1.0f;
-		Vector3 velocity(0, 0, kBulletSpeed); 
+		const float kBulletSpeed = 1.0f;
+		Vector3 velocity(0, 0, kBulletSpeed);
 		velocity = TransformNolmar(velocity, worldTransform_.matWorld_);
 
 		playerBullet* newBullet = new playerBullet();
-		newBullet->Initialize(model_, worldTransform_.translation_, velocity);
-		bullets_.push_back( newBullet);
-	}
 
+		newBullet->Initialize(model_, GetWorldPosition(), velocity);
+		bullets_.push_back(newBullet);
+	}
 }
 
 Vector3 Player::GetWorldPosition() {
@@ -151,3 +150,4 @@ Vector3 Player::GetWorldPosition() {
 
 void Player::OnCollision() {};
 
+void Player::SetParent(const KamataEngine::WorldTransform* parent) { worldTransform_.parent_ = parent; }

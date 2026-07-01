@@ -8,7 +8,7 @@ void playerBullet::Initialize(Model* model, const Vector3& position, const Vecto
 	model_ = model;
 
 	textureHandle_ = TextureManager::Load("white1x1.png");
-
+	
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
 	velocity_ = velocity;
@@ -41,4 +41,8 @@ Vector3 playerBullet::GetWorldPosition() {
 	worldPos.z = worldTransform_.translation_.z;
 
 	return worldPos;
+}
+
+void playerBullet::SetParent(const WorldTransform* parent) { 
+	worldTransform_.parent_ = parent;
 }
