@@ -163,22 +163,16 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CameraController.cpp" />
-    <ClCompile Include="DeathParticles.cpp" />
     <ClCompile Include="Enemy.cpp" />
-    <ClCompile Include="Fade.cpp" />
+    <ClCompile Include="EnemyBullet.cpp" />
     <ClCompile Include="GameScene.cpp" />
-    <ClCompile Include="GuardEffect.cpp" />
-    <ClCompile Include="HitEffect.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MapChipField.cpp" />
+    <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Player.cpp" />
-    <ClCompile Include="RandomEngine.cpp" />
-    <ClCompile Include="ShieldEnemy.cpp" />
+    <ClCompile Include="playerBullet.cpp" />
+    <ClCompile Include="RailCameraController.cpp" />
     <ClCompile Include="SkyDome.cpp" />
-    <ClCompile Include="stageManager.cpp" />
-    <ClCompile Include="TitleScene.cpp" />
-    <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="UpdateWorldTransform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\TerrainPS.hlsl">
@@ -278,24 +272,17 @@
     <None Include="Resources\shaders\Sprite.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AABB.h" />
-    <ClInclude Include="CameraController.h" />
-    <ClInclude Include="Collision.h" />
-    <ClInclude Include="DeathParticles.h" />
+    <ClInclude Include="AxisIndicator.h" />
     <ClInclude Include="Enemy.h" />
-    <ClInclude Include="Fade.h" />
+    <ClInclude Include="EnemyBullet.h" />
     <ClInclude Include="GameScene.h" />
-    <ClInclude Include="GuardEffect.h" />
-    <ClInclude Include="HitEffect.h" />
-    <ClInclude Include="MapChipField.h" />
     <ClInclude Include="MyMath.h" />
+    <ClInclude Include="Plane.h" />
     <ClInclude Include="Player.h" />
-    <ClInclude Include="RandomEngine.h" />
-    <ClInclude Include="ShieldEnemy.h" />
+    <ClInclude Include="playerBullet.h" />
+    <ClInclude Include="RailCameraController.h" />
     <ClInclude Include="SkyDome.h" />
-    <ClInclude Include="stageManager.h" />
-    <ClInclude Include="TitleScene.h" />
-    <ClInclude Include="Transform.h" />
+    <ClInclude Include="UpdateWorldTransform.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
