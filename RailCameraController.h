@@ -1,15 +1,16 @@
 #pragma once
 #include "KamataEngine.h"
+#include "UpdateWorldTransform.h"
 
 
 class Player;
 
-class CameraController {
+class RailCameraController {
 
 public:
 	//// コンストラクタトデストラクタ
-	//CameraController();
-	//~CameraController();
+	//RailCameraController();
+	//~RailCameraController();
 
 	KamataEngine::Camera& GetCamera() { return camera_; }//getter
 
@@ -23,8 +24,8 @@ public:
 
 	Rect movableArea_ = {0, 100, 0, 100};
 
-// 左右に5、上下に5の「箱」をイメージする場合
-	static inline const Rect cameraDeadZone_ = {-5.0f, 5.0f, -5.0f, 5.0f};
+// 左右に2、上下に2の「箱」をイメージする場合
+	static inline const Rect cameraDeadZone_ = {-2.0f, 2.0f, -2.0f, 2.0f};
 
 
 	void SetMovableArea(Rect area) { movableArea_ = area; };
@@ -41,8 +42,7 @@ public:
 
 #endif // DEBUG
 
-	//リセット用の関数
-	void Reset();
+
 
 	//追従対象のカメラの座標（オフセット）
 	KamataEngine::Vector3 targetOffset_ = {0, 0, -15.0f};
@@ -51,13 +51,14 @@ public:
 
 	//外部情報をセットするためのセッター
 	void SetTarget(Player* target) { target_ = target; }
+	KamataEngine::WorldTransform& GetWorldTransform() { return worldTransform_; }
 
 	Player* target_ = nullptr;
 
 private:
 	// カメラ
 	KamataEngine::Camera camera_;
-
+	KamataEngine::WorldTransform worldTransform_;
 	//座標補間の割合
 	static inline const float kInterpolationRate = 0.1f;
 	//速度掛け率

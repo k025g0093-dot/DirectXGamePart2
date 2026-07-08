@@ -144,3 +144,55 @@ static KamataEngine::Vector3 TransformNolmar(const KamataEngine::Vector3& v, con
 	};
 	return result;
 }
+
+
+// 3x3行列式の計算（ヘルパー関数）
+static float Det3x3(float m00, float m01, float m02, float m10, float m11, float m12, float m20, float m21, float m22) {
+	return m00 * (m11 * m22 - m12 * m21) - m01 * (m10 * m22 - m12 * m20) + m02 * (m10 * m21 - m11 * m20);
+}
+
+// 4x4行列式の計算
+static float Determinant(const KamataEngine::Matrix4x4& m) {
+	float det = m.m[0][0] * Det3x3(m.m[1][1], m.m[1][2], m.m[1][3], m.m[2][1], m.m[2][2], m.m[2][3], m.m[3][1], m.m[3][2], m.m[3][3]) -
+	            m.m[0][1] * Det3x3(m.m[1][0], m.m[1][2], m.m[1][3], m.m[2][0], m.m[2][2], m.m[2][3], m.m[3][0], m.m[3][2], m.m[3][3]) +
+	            m.m[0][2] * Det3x3(m.m[1][0], m.m[1][1], m.m[1][3], m.m[2][0], m.m[2][1], m.m[2][3], m.m[3][0], m.m[3][1], m.m[3][3]) -
+	            m.m[0][3] * Det3x3(m.m[1][0], m.m[1][1], m.m[1][2], m.m[2][0], m.m[2][1], m.m[2][2], m.m[3][0], m.m[3][1], m.m[3][2]);
+	return det;
+}
+
+// 4x4逆行列の計算
+static KamataEngine::Matrix4x4 Inverse(const KamataEngine::Matrix4x4& m) {
+	float det = Determinant(m);
+
+	// 行列式がほぼ0の場合は単位行列を返す
+	if (std::abs(det) < 1e-6f) {
+		KamataEngine::Matrix4x4 identity{};
+		identity.m[0][0] = identity.m[1][1] = identity.m[2][2] = identity.m[3][3] = 1.0f;
+		return identity;
+	}
+
+	float invDet = 1.0f / det;
+	KamataEngine::Matrix4x4 result{};
+
+	result.m[0][0] = invDet * Det3x3(m.m[1][1], m.m[1][2], m.m[1][3], m.m[2][1], m.m[2][2], m.m[2][3], m.m[3][1], m.m[3][2], m.m[3][3]);
+	result.m[0][1] = -invDet * Det3x3(m.m[0][1], m.m[0][2], m.m[0][3], m.m[2][1], m.m[2][2], m.m[2][3], m.m[3][1], m.m[3][2], m.m[3][3]);
+	result.m[0][2] = invDet * Det3x3(m.m[0][1], m.m[0][2], m.m[0][3], m.m[1][1], m.m[1][2], m.m[1][3], m.m[3][1], m.m[3][2], m.m[3][3]);
+	result.m[0][3] = -invDet * Det3x3(m.m[0][1], m.m[0][2], m.m[0][3], m.m[1][1], m.m[1][2], m.m[1][3], m.m[2][1], m.m[2][2], m.m[2][3]);
+
+	result.m[1][0] = -invDet * Det3x3(m.m[1][0], m.m[1][2], m.m[1][3], m.m[2][0], m.m[2][2], m.m[2][3], m.m[3][0], m.m[3][2], m.m[3][3]);
+	result.m[1][1] = invDet * Det3x3(m.m[0][0], m.m[0][2], m.m[0][3], m.m[2][0], m.m[2][2], m.m[2][3], m.m[3][0], m.m[3][2], m.m[3][3]);
+	result.m[1][2] = -invDet * Det3x3(m.m[0][0], m.m[0][2], m.m[0][3], m.m[1][0], m.m[1][2], m.m[1][3], m.m[3][0], m.m[3][2], m.m[3][3]);
+	result.m[1][3] = invDet * Det3x3(m.m[0][0], m.m[0][2], m.m[0][3], m.m[1][0], m.m[1][2], m.m[1][3], m.m[2][0], m.m[2][2], m.m[2][3]);
+
+	result.m[2][0] = invDet * Det3x3(m.m[1][0], m.m[1][1], m.m[1][3], m.m[2][0], m.m[2][1], m.m[2][3], m.m[3][0], m.m[3][1], m.m[3][3]);
+	result.m[2][1] = -invDet * Det3x3(m.m[0][0], m.m[0][1], m.m[0][3], m.m[2][0], m.m[2][1], m.m[2][3], m.m[3][0], m.m[3][1], m.m[3][3]);
+	result.m[2][2] = invDet * Det3x3(m.m[0][0], m.m[0][1], m.m[0][3], m.m[1][0], m.m[1][1], m.m[1][3], m.m[3][0], m.m[3][1], m.m[3][3]);
+	result.m[2][3] = -invDet * Det3x3(m.m[0][0], m.m[0][1], m.m[0][3], m.m[1][0], m.m[1][1], m.m[1][3], m.m[2][0], m.m[2][1], m.m[2][3]);
+
+	result.m[3][0] = -invDet * Det3x3(m.m[1][0], m.m[1][1], m.m[1][2], m.m[2][0], m.m[2][1], m.m[2][2], m.m[3][0], m.m[3][1], m.m[3][2]);
+	result.m[3][1] = invDet * Det3x3(m.m[0][0], m.m[0][1], m.m[0][2], m.m[2][0], m.m[2][1], m.m[2][2], m.m[3][0], m.m[3][1], m.m[3][2]);
+	result.m[3][2] = -invDet * Det3x3(m.m[0][0], m.m[0][1], m.m[0][2], m.m[1][0], m.m[1][1], m.m[1][2], m.m[3][0], m.m[3][1], m.m[3][2]);
+	result.m[3][3] = invDet * Det3x3(m.m[0][0], m.m[0][1], m.m[0][2], m.m[1][0], m.m[1][1], m.m[1][2], m.m[2][0], m.m[2][1], m.m[2][2]);
+
+	return result;
+}

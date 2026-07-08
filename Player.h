@@ -43,6 +43,8 @@ public:
 
 	bool isDead_=false;
 	bool IsDead() const { return isDead_; };
+	
+	void SetParent(const KamataEngine::WorldTransform* parent);
 
 
 	KamataEngine::Vector3 GetWorldPosition();

@@ -17,7 +17,7 @@ void GameScene::Initialize() {
 	skyDome_ = new SkyDome();
 	plane_ = new Plane();
 
-	cameraController_ = new CameraController();
+	railCameraController_ = new RailCameraController();
 
 	// プレイヤーのモデル生成
 	playerModel_ = Model::CreateFromOBJ("player", true);
@@ -28,26 +28,22 @@ void GameScene::Initialize() {
 	debugCamera_ = new DebugCamera(1280, 720);
 
 #pragma region カメラコントローラーの設定
-	cameraController_->Initialize();
-	cameraController_->SetTarget(player_);
+	railCameraController_->Initialize();
+	railCameraController_->SetTarget(player_);
 	// ここで距離の微調整が可能
-	cameraController_->targetOffset_ = {0.0f, 0.0f, -20.0f};
-	//	cameraController_->SetMovableArea({11.0f, 100.0f, 6.0f, 100.0f}); // カメラの移動できる最大値、最少値
-	cameraController_->Reset();
-	// ライン描画用カメラをコントローラー側に同期
-	PrimitiveDrawer::GetInstance()->SetCamera(&cameraController_->GetCamera());
+
+	PrimitiveDrawer::GetInstance()->SetCamera(&railCameraController_->GetCamera());
 #pragma endregion
 
-	Vector3 playerPosition = {0, 0, 0};
-	player_->Initialize(playerModel_, &camera_, playerPosition);
+	Vector3 playerPosition = {0, 5, 20};
+	player_->Initialize(playerModel_, &railCameraController_->GetCamera(), playerPosition);
+	player_->SetParent(&railCameraController_->GetWorldTransform());
 
 	Vector3 enemyPosition = {0, 0, 10};
-	enemy_->Initialize(enemyModel_, &camera_, enemyPosition);
+	enemy_->Initialize(enemyModel_, &railCameraController_->GetCamera(), enemyPosition);
 
 	skyDome_->Initialize(skyDomeModel_);
 	plane_->Initialize(planeModel_);
-
-	cameraController_->Reset();
 
 	// キー入力の初期化
 	input_ = Input::GetInstance();
@@ -76,31 +72,31 @@ void GameScene::Update() {
 		camera_.UpdateMatrix();
 	}
 
-
+	railCameraController_->Update();
 	skyDome_->Update();
 	plane_->Update();
 
 	player_->Updata();
 	enemy_->Update();
-	cameraController_->Update();
 
 	CheckAllCollisions();
 }
 
 void GameScene::Draw() {
+
+	Camera& activeCamera = railCameraController_->GetCamera();
+
 	Model::PreDraw();
 
-	plane_->Draw(&camera_);
-	skyDome_->Draw(&camera_);
-	
+	plane_->Draw(&activeCamera);
+	skyDome_->Draw(&activeCamera);
+
 	player_->Draw();
 	enemy_->Draw();
 	Model::PostDraw();
 }
 
 GameScene::~GameScene() {
-
-
 
 	// ポインタのデリート
 	delete player_;
@@ -131,24 +127,19 @@ void GameScene::CheckAllCollisions() {
 		posB = bullet->GetWorldPosition();
 
 		Vector3 diff = posA - posB;
-		
+
 		// 距離を計算
-		float distance = sqrt(
-			diff.x * diff.x + 
-			diff.y * diff.y + 
-			diff.z * diff.z
-		);
+		float distance = sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
 		float playerRadius = 1.0f;
 		float bulletRadius = 0.5f;
 
 		if (distance < playerRadius + bulletRadius) {
-			//地キャラの衝突判定
+			// 地キャラの衝突判定
 			player_->OnCollision();
-			//敵弾の衝突判定のコールバック
+			// 敵弾の衝突判定のコールバック
 			bullet->OnCollision();
 		}
 	}
-
 
 	// 当たり判定の実装
 	posA = enemy_->GetWorldPosition();
@@ -156,24 +147,38 @@ void GameScene::CheckAllCollisions() {
 		posB = bullet->GetWorldPosition();
 
 		Vector3 diff = posA - posB;
-		
+
 		// 距離を計算
-		float distance = sqrt(
-			diff.x * diff.x + 
-			diff.y * diff.y + 
-			diff.z * diff.z
-		);
+		float distance = sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
 		float playerRadius = 1.0f;
 		float bulletRadius = 0.5f;
 
 		if (distance < playerRadius + bulletRadius) {
-			//地キャラの衝突判定
+			// 地キャラの衝突判定
 			enemy_->OnCollision();
-			//敵弾の衝突判定のコールバック
+			// 敵弾の衝突判定のコールバック
 			bullet->OnCollision();
 		}
 	}
 
+	for (playerBullet* pBullet : playerBullets) {
+		posA = pBullet->GetWorldPosition();
+		for (EnemyBullet* eBullet : enemyBullets) {
+			posB = eBullet->GetWorldPosition();
 
+			Vector3 diff = posA - posB;
 
+			// 距離を計算
+			float distance = sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+			float playerRadius = 1.0f;
+			float bulletRadius = 0.5f;
+
+			if (distance < playerRadius + bulletRadius) {
+				// 地キャラの衝突判定
+				eBullet->OnCollision();
+				// 敵弾の衝突判定のコールバック
+				pBullet->OnCollision();
+			}
+		}
+	}
 }

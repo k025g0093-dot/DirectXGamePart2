@@ -2,7 +2,7 @@
 #include "KamataEngine.h"
 #include "Plane.h"
 
-#include "CameraController.h"
+#include "RailCameraController.h"
 #include "Enemy.h"
 #include "Player.h"
 #include "SkyDome.h"
@@ -42,7 +42,7 @@ public:
 	SkyDome* skyDome_ = nullptr;
 	Plane* plane_ = nullptr;
 
-	CameraController* cameraController_;
+	RailCameraController* railCameraController_;
 	KamataEngine::DebugCamera* debugCamera_ = nullptr;
 	KamataEngine::Input* input_ = nullptr;
 
