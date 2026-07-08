@@ -39,13 +39,11 @@ void GameScene::Initialize() {
 	player_->Initialize(playerModel_, &railCameraController_->GetCamera(), playerPosition);
 	player_->SetParent(&railCameraController_->GetWorldTransform());
 
-
 	Vector3 enemyPosition = {0, 0, 10};
 	enemy_->Initialize(enemyModel_, &railCameraController_->GetCamera(), enemyPosition);
 
 	skyDome_->Initialize(skyDomeModel_);
 	plane_->Initialize(planeModel_);
-
 
 	// キー入力の初期化
 	input_ = Input::GetInstance();
@@ -58,7 +56,6 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Update() {
-
 
 #ifdef _DEBUG
 	if (input_->TriggerKey(DIK_0)) {
@@ -74,7 +71,6 @@ void GameScene::Update() {
 	} else {
 		camera_.UpdateMatrix();
 	}
-
 
 	railCameraController_->Update();
 	skyDome_->Update();
@@ -94,15 +90,13 @@ void GameScene::Draw() {
 
 	plane_->Draw(&activeCamera);
 	skyDome_->Draw(&activeCamera);
-	
+
 	player_->Draw();
 	enemy_->Draw();
 	Model::PostDraw();
 }
 
 GameScene::~GameScene() {
-
-
 
 	// ポインタのデリート
 	delete player_;
@@ -133,24 +127,19 @@ void GameScene::CheckAllCollisions() {
 		posB = bullet->GetWorldPosition();
 
 		Vector3 diff = posA - posB;
-		
+
 		// 距離を計算
-		float distance = sqrt(
-			diff.x * diff.x + 
-			diff.y * diff.y + 
-			diff.z * diff.z
-		);
+		float distance = sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
 		float playerRadius = 1.0f;
 		float bulletRadius = 0.5f;
 
 		if (distance < playerRadius + bulletRadius) {
-			//地キャラの衝突判定
+			// 地キャラの衝突判定
 			player_->OnCollision();
-			//敵弾の衝突判定のコールバック
+			// 敵弾の衝突判定のコールバック
 			bullet->OnCollision();
 		}
 	}
-
 
 	// 当たり判定の実装
 	posA = enemy_->GetWorldPosition();
@@ -158,24 +147,38 @@ void GameScene::CheckAllCollisions() {
 		posB = bullet->GetWorldPosition();
 
 		Vector3 diff = posA - posB;
-		
+
 		// 距離を計算
-		float distance = sqrt(
-			diff.x * diff.x + 
-			diff.y * diff.y + 
-			diff.z * diff.z
-		);
+		float distance = sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
 		float playerRadius = 1.0f;
 		float bulletRadius = 0.5f;
 
 		if (distance < playerRadius + bulletRadius) {
-			//地キャラの衝突判定
+			// 地キャラの衝突判定
 			enemy_->OnCollision();
-			//敵弾の衝突判定のコールバック
+			// 敵弾の衝突判定のコールバック
 			bullet->OnCollision();
 		}
 	}
 
+	for (playerBullet* pBullet : playerBullets) {
+		posA = pBullet->GetWorldPosition();
+		for (EnemyBullet* eBullet : enemyBullets) {
+			posB = eBullet->GetWorldPosition();
 
+			Vector3 diff = posA - posB;
 
+			// 距離を計算
+			float distance = sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+			float playerRadius = 1.0f;
+			float bulletRadius = 0.5f;
+
+			if (distance < playerRadius + bulletRadius) {
+				// 地キャラの衝突判定
+				eBullet->OnCollision();
+				// 敵弾の衝突判定のコールバック
+				pBullet->OnCollision();
+			}
+		}
+	}
 }
