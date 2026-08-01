@@ -4,7 +4,7 @@ using namespace KamataEngine;
 
 void EnemyBullet::Initialize(Model* model, const Vector3& position, const Vector3& velocity) {
 
-	assert(model);
+	//assert(model);
 	model_ = model;
 
 	textureHandle_ = TextureManager::Load("white1x1.png");
@@ -34,7 +34,9 @@ void EnemyBullet::OnCollision() {
 
 
 
-void EnemyBullet::Draw(const Camera* camera) { model_->Draw(worldTransform_, *camera); }
+void EnemyBullet::Draw(const Camera* camera) {
+	model_->Draw(worldTransform_, *camera);
+}
 
 Vector3 EnemyBullet::GetWorldPosition() {
 	Vector3 worldPos{};

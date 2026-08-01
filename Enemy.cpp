@@ -1,12 +1,13 @@
 #include "Enemy.h"
 #include "UpdateWorldTransform.h"
 #include"Player.h"
+#include "GameScene.h"
 
 using namespace KamataEngine;
 
 void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position) {
 
-	assert(model); // セッターにモデルを入れる
+	//assert(model); // セッターにモデルを入れる
 	model_ = model;
 
 	worldTransform_.Initialize();
@@ -39,9 +40,7 @@ void Enemy::Update() {
 }
 
 void Enemy::Draw() { 
-	for (EnemyBullet* bullet : bullets_) {
-		bullet->Draw(camera_);
-	}
+
 	model_->Draw(worldTransform_, *camera_);
 
 }
@@ -58,13 +57,6 @@ void Enemy::UpdateApproach() {
 		phase_ = Phase::Leave;
 	}
 
-	bullets_.remove_if([](EnemyBullet* bullet) {
-		if (bullet->IsDead()) {
-			delete bullet;
-			return true;
-		}
-		return false;
-	});
 	
 	--kShotTimer; 
 
@@ -73,9 +65,6 @@ void Enemy::UpdateApproach() {
 		kShotTimer = kFireInterval;
 	}
 
-	for (EnemyBullet* bullet : bullets_) {
-		bullet->Update();
-	}
 
 }
 
@@ -86,7 +75,7 @@ void Enemy::UpdateLeave() {
 
 void Enemy::EnemyShotUpdate() {
 
-	assert(player_);
+	//assert(player_);
 
 	const float kBulletSpeed = 0.5f;
 
@@ -113,8 +102,9 @@ void Enemy::EnemyShotUpdate() {
 	};
 
 	EnemyBullet* newBullet = new EnemyBullet();
-	newBullet->Initialize(model_, worldTransform_.translation_, velocity);
-	bullets_.push_back(newBullet);
+	newBullet->Initialize(bulletModel_, GetWorldPosition(), velocity);
+	gameScene_->AddEnemyBullet(newBullet);
+
 }
 
 void Enemy::OnCollision() {};
@@ -128,3 +118,5 @@ Vector3 Enemy::GetWorldPosition() {
 
 	return worldPos;
 }
+
+
