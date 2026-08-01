@@ -4,7 +4,7 @@ using namespace KamataEngine;
 
 void playerBullet::Initialize(Model* model, const Vector3& position, const Vector3& velocity) {
 
-	assert(model);
+	//assert(model);
 	model_ = model;
 
 	textureHandle_ = TextureManager::Load("white1x1.png");
