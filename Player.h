@@ -4,6 +4,8 @@
 #include "playerBullet.h"
 #include <list>
 
+class LockOn;
+
 class Player {
 
 public:
@@ -46,6 +48,8 @@ public:
 
 	void SetParent(const KamataEngine::WorldTransform* parent);
 
+	void SetLockOn(LockOn* lockOn) { lockOn_ = lockOn; }
+
 	KamataEngine::Vector3 GetWorldPosition();
 
 	// 慣性系の物
@@ -82,6 +86,9 @@ public:
 	playerBullet* bullet_ = nullptr;
 	std::list<playerBullet*> bullets_;
 
+	LockOn* lockOn_ ;
+
+
 	// 当たり判定のコールバック
 	void OnCollision();
 
@@ -90,6 +97,9 @@ public:
 	KamataEngine::WorldTransform worldTransform3DReticle_;
 
 	void Get3DReticleModel(KamataEngine::Model* model3DReticle) { model3DReticle_ = model3DReticle; }
+	void Gaet2DReticlePosition(KamataEngine::Vector2& position) { position = reticlePosition2D; }
+
+	KamataEngine::Vector2 reticlePosition2D = {};
 
 private: // プライベート関数群とかのその他
 	// カメラ

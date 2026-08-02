@@ -6,6 +6,7 @@
 #include "Enemy.h"
 #include "Player.h"
 #include "SkyDome.h"
+#include "LockOn.h"
 
 #include <sstream>
 
@@ -56,6 +57,7 @@ public:
 	// playerなどのポインタ
 	Player* player_ = nullptr;
 	Enemy* enemy_ = nullptr;
+	LockOn* lockOn_ = nullptr;
 	std::list<Enemy*> enemies_;
 
 	SkyDome* skyDome_ = nullptr;
