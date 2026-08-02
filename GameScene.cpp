@@ -16,6 +16,7 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	skyDome_ = new SkyDome();
 	plane_ = new Plane();
+	lockOn_ = new LockOn();
 
 	railCameraController_ = new RailCameraController();
 
@@ -45,7 +46,7 @@ void GameScene::Initialize() {
 	player_->Initialize(playerModel_, &railCameraController_->GetCamera(), playerPosition);
 	player_->SetParent(&railCameraController_->GetWorldTransform());
 	player_->Get3DReticleModel(model3DReticle_);
-
+	player_->SetLockOn(lockOn_);
 
 	Vector3 enemyPosition = {0, 0, 10};
 
@@ -57,11 +58,15 @@ void GameScene::Initialize() {
 	skyDome_->Initialize(skyDomeModel_);
 	plane_->Initialize(planeModel_);
 
+	lockOn_->Initialize();
+
 	// キー入力の初期化
 	input_ = Input::GetInstance();
 	// ブレンダーみたいな表示線の関数初期化
 	AxisIndicator::GetInstance()->SetVisible(true);
 	AxisIndicator::GetInstance()->SetTargetCamera(&debugCamera_->GetCamera());
+
+
 
 	LoadEnemyPopData();
 }
@@ -86,6 +91,8 @@ void GameScene::Update() {
 	railCameraController_->Update();
 	skyDome_->Update();
 	plane_->Update();
+	
+	lockOn_->Update(player_, enemies_, railCameraController_->GetCamera());
 
 	player_->Updata();
 	for (Enemy* enemy : enemies_) {
@@ -131,7 +138,8 @@ void GameScene::Draw() {
 		// UIの描画
 	Sprite::PreDraw();
 
-	player_->DrawUI();
+	//player_->DrawUI();
+	lockOn_->Draw();
 
 	Sprite::PostDraw();
 

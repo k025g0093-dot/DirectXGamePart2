@@ -3,21 +3,13 @@
 #include "KamataEngine.h"
 #include <cmath>
 
-static KamataEngine::Vector3 operator+(const KamataEngine::Vector3& v1, const KamataEngine::Vector3& v2) {
-	return {v1.x + v2.x, v1.y + v2.y, v1.z + v2.z};
-}
+static KamataEngine::Vector3 operator+(const KamataEngine::Vector3& v1, const KamataEngine::Vector3& v2) { return {v1.x + v2.x, v1.y + v2.y, v1.z + v2.z}; }
 
-static KamataEngine::Vector3 operator-(const KamataEngine::Vector3& v1, const KamataEngine::Vector3& v2) {
-	return {v1.x - v2.x, v1.y - v2.y, v1.z - v2.z};
-}
+static KamataEngine::Vector3 operator-(const KamataEngine::Vector3& v1, const KamataEngine::Vector3& v2) { return {v1.x - v2.x, v1.y - v2.y, v1.z - v2.z}; }
 
-static KamataEngine::Vector3 operator*(const KamataEngine::Vector3& v, float scalar) {
-	return {v.x * scalar, v.y * scalar, v.z * scalar};
-}
+static KamataEngine::Vector3 operator*(const KamataEngine::Vector3& v, float scalar) { return {v.x * scalar, v.y * scalar, v.z * scalar}; }
 
-static KamataEngine::Vector3 operator*(float scalar, const KamataEngine::Vector3& v) {
-	return v * scalar;
-}
+static KamataEngine::Vector3 operator*(float scalar, const KamataEngine::Vector3& v) { return v * scalar; }
 
 static KamataEngine::Vector3& operator+=(KamataEngine::Vector3& v1, const KamataEngine::Vector3& v2) {
 	v1.x += v2.x;
@@ -122,10 +114,7 @@ static KamataEngine::Matrix4x4 MakeTranslate(const KamataEngine::Vector3& transl
 	return result;
 }
 
-static KamataEngine::Matrix4x4 MakeAffineMatrix(
-    const KamataEngine::Vector3& scale,
-    const KamataEngine::Vector3& rotate,
-    const KamataEngine::Vector3& translate) {
+static KamataEngine::Matrix4x4 MakeAffineMatrix(const KamataEngine::Vector3& scale, const KamataEngine::Vector3& rotate, const KamataEngine::Vector3& translate) {
 	KamataEngine::Matrix4x4 scaleMatrix = MakeScale(scale);
 	KamataEngine::Matrix4x4 rotateXMatrix = MakeRotateX(rotate.x);
 	KamataEngine::Matrix4x4 rotateYMatrix = MakeRotateY(rotate.y);
@@ -146,16 +135,22 @@ static KamataEngine::Matrix4x4 MakeViewportMatrix(float x, float y, float width,
 	return result;
 }
 
-static KamataEngine::Vector3 TransformNolmar(const KamataEngine::Vector3& v, const KamataEngine::Matrix4x4& m) {
+static KamataEngine::Vector3 Project(
+    const KamataEngine::Vector3 worldPosition, float viewportX, float viewportY, float viewportWidth, float viewportHeight, const KamataEngine::Matrix4x4& matView,
+    const KamataEngine::Matrix4x4& matProjection) {
 
-	KamataEngine::Vector3 result{
-		v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0],
-		v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1],
-		v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2]
-	};
-	return result;
+	KamataEngine::Matrix4x4 matViewport = MakeViewportMatrix(viewportX, viewportY, viewportWidth, viewportHeight);
+
+	KamataEngine::Matrix4x4 matViewProjectionViewport = Multiply(Multiply(matView, matProjection), matViewport);
+
+	return Transform(worldPosition, matViewProjectionViewport);
 }
 
+static KamataEngine::Vector3 TransformNolmar(const KamataEngine::Vector3& v, const KamataEngine::Matrix4x4& m) {
+
+	KamataEngine::Vector3 result{v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0], v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1], v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2]};
+	return result;
+}
 
 // 3x3行列式の計算（ヘルパー関数）
 static float Det3x3(float m00, float m01, float m02, float m10, float m11, float m12, float m20, float m21, float m22) {
@@ -214,4 +209,11 @@ static KamataEngine::Vector3 Normalize(const KamataEngine::Vector3& v) {
 		return {v.x / length, v.y / length, v.z / length};
 	}
 	return {0.0f, 0.0f, 0.0f}; // ゼロベクトルの場合はそのまま返す
+}
+
+static float Distance(const KamataEngine::Vector2& v1, const KamataEngine::Vector2& v2) {
+	float dx = v1.x - v2.x;
+	float dy = v1.y - v2.y;
+
+	return std::sqrt(dx * dx + dy * dy);
 }

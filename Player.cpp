@@ -1,10 +1,11 @@
 #define NOMINMAX
 #include "Player.h"
 #include "MyMath.h"
-
+#include "Enemy.h"
 #include <algorithm>
 #include <cassert>
 #include <numbers>
+#include "LockOn.h"
 
 #ifdef _DEBUG
 #include <imgui.h>
@@ -182,15 +183,34 @@ void Player::Attack() {
 	}
 	//Rトリガーを押したら発射
 	if (joyState.Gamepad.bRightTrigger > 0) {
-		const float kBulletSpeed = 1.0f;
-		Vector3 velocity(0, 0, kBulletSpeed);
-		velocity = worldTransform3DReticle_.translation_ - GetWorldPosition();
-		velocity = Normalize(velocity) * kBulletSpeed;
-	
-		playerBullet* newBullet = new playerBullet();
 
-		newBullet->Initialize(model_, GetWorldPosition(), velocity);
-		bullets_.push_back(newBullet);
+		if (lockOn_->isLockedOn_) {
+
+			Enemy* target = lockOn_->GetTarget();
+
+			if (target) {
+				Vector3 targetPos = target->GetWorldPosition();
+				Vector3 playerPos = GetWorldPosition();
+				Vector3 direction = targetPos - playerPos;
+				direction = Normalize(direction);
+				const float kBulletSpeed = 1.0f;
+				Vector3 velocity = direction * kBulletSpeed;
+				playerBullet* newBullet = new playerBullet();
+				newBullet->Initialize(model_, playerPos, velocity);
+				bullets_.push_back(newBullet);
+			}
+
+		}else{
+			const float kBulletSpeed = 1.0f;
+			Vector3 velocity(0, 0, kBulletSpeed);
+			velocity = worldTransform3DReticle_.translation_ - GetWorldPosition();
+			velocity = Normalize(velocity) * kBulletSpeed;
+
+			playerBullet* newBullet = new playerBullet();
+
+			newBullet->Initialize(model_, GetWorldPosition(), velocity);
+			bullets_.push_back(newBullet);
+		}
 	}
 
 }
@@ -240,6 +260,8 @@ Vector3 position2DReticle =
 		);
 
 	position2DReticle = Transform(position2DReticle, matViewProjectionViewport);
+
+	reticlePosition2D = Vector2(position2DReticle.x, position2DReticle.y);
 
 	sprite2DReticle_->SetPosition(Vector2(position2DReticle.x, position2DReticle.y));
 }
