@@ -32,6 +32,8 @@ public:
 
 	KamataEngine::Model* model_ = nullptr;
 	KamataEngine::Model* playerModel_ = nullptr;
+	KamataEngine::Model* model3DReticle_ = nullptr;
+
 	KamataEngine::Model* enemyModel_ = nullptr;
 	KamataEngine::Model* enemyBulletModel_ = nullptr;
 

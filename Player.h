@@ -22,8 +22,6 @@ public:
 
 #pragma endregion
 
-
-
 	KamataEngine::Model* modelAttack_ = nullptr;
 	KamataEngine::WorldTransform worldTransformAttack_;
 
@@ -38,17 +36,17 @@ public:
 	void Updata();
 
 	void Draw();
-	
+	// UI描画
+	void DrawUI();
+
 	void Rotate();
 
-	bool isDead_=false;
+	bool isDead_ = false;
 	bool IsDead() const { return isDead_; };
-	
+
 	void SetParent(const KamataEngine::WorldTransform* parent);
 
-
 	KamataEngine::Vector3 GetWorldPosition();
-
 
 	// 慣性系の物
 	KamataEngine::Vector3 velocity_ = {};
@@ -64,37 +62,44 @@ public:
 	struct CollisionMapInfo {
 		bool isFloor = false;   // 天井
 		bool isCeiling = false; // 着地
-		bool isWall = false;  // 壁
+		bool isWall = false;    // 壁
 		KamataEngine::Vector3 velocity_;
 	};
 
-	
 	// ワールドトランスフォーム
 	KamataEngine::WorldTransform worldTransform_;
 	// 3Dモデルで必要なモデルの呼び出し
 	KamataEngine::Model* model_ = nullptr;
+	KamataEngine::Model* model3DReticle_ = nullptr;
+
+	// 2Dレティクルの画像入れるやつ
+	KamataEngine::Sprite* sprite2DReticle_ = nullptr;
+
 	// テクスチャハンドル
 	uint32_t textureHandle_;
 
-	//プレイヤーの弾
-	playerBullet* bullet_=nullptr;
+	// プレイヤーの弾
+	playerBullet* bullet_ = nullptr;
 	std::list<playerBullet*> bullets_;
 
-	//当たり判定のコールバック
+	// 当たり判定のコールバック
 	void OnCollision();
 
 	const std::list<playerBullet*>& GetBullets() const { return bullets_; }
 
-private: // プライベート関数群とかのその他
+	KamataEngine::WorldTransform worldTransform3DReticle_;
 
+	void Get3DReticleModel(KamataEngine::Model* model3DReticle) { model3DReticle_ = model3DReticle; }
+
+private: // プライベート関数群とかのその他
 	// カメラ
 	KamataEngine::Camera* camera_ = nullptr;
-	//キー入力
+	// キー入力
 	KamataEngine::Input* input_ = nullptr;
-
 
 	// プライベート関数
 	void MovePlayer();
 	void Attack();
-	
+	void Update3DReticlePosition();
+	void Update2DReticlePosition();
 };

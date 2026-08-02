@@ -20,7 +20,11 @@ void GameScene::Initialize() {
 	railCameraController_ = new RailCameraController();
 
 	// プレイヤーのモデル生成
+	TextureManager::Load("2DReticle.png");
+	// ここのモデルは今後変更予定です、さらに名前も具ちゃってるのでそこも変更予定です
 	playerModel_ = Model::CreateFromOBJ("player", true);
+	model3DReticle_ = Model::CreateFromOBJ("deathParticle", true);
+
 	enemyModel_ = Model::CreateFromOBJ("enemy", true);
 	enemyBulletModel_ = Model::CreateFromOBJ("enemyBullets", true);
 
@@ -40,6 +44,8 @@ void GameScene::Initialize() {
 	Vector3 playerPosition = {0, 5, 20};
 	player_->Initialize(playerModel_, &railCameraController_->GetCamera(), playerPosition);
 	player_->SetParent(&railCameraController_->GetWorldTransform());
+	player_->Get3DReticleModel(model3DReticle_);
+
 
 	Vector3 enemyPosition = {0, 0, 10};
 
@@ -121,6 +127,15 @@ void GameScene::Draw() {
 		enemy->Draw();
 	}
 	Model::PostDraw();
+
+		// UIの描画
+	Sprite::PreDraw();
+
+	player_->DrawUI();
+
+	Sprite::PostDraw();
+
+
 }
 
 GameScene::~GameScene() {
