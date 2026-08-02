@@ -14,6 +14,7 @@ using namespace KamataEngine;
 
 Player::Player() {}
 bool isHit = false;
+
 void Player::Initialize(
     KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position
 
@@ -32,6 +33,14 @@ void Player::Initialize(
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
 	worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
+
+	// 3Dレティクルのワールドトランスフォームの初期化
+	worldTransform3DReticle_.Initialize();
+
+	// ２Dレティクル初期化
+	uint32_t textureReticle = TextureManager::Load("2DReticle.png");
+	sprite2DReticle_ = Sprite::Create(textureReticle, {0, 0}, {1, 1, 1, 1}, {0.5f, 0.5f});
+
 	camera_ = camera;
 
 	// キー入力の初期化
@@ -57,6 +66,8 @@ void Player::Updata() {
 	}
 
 	UpdateWorldTransform(worldTransform_);
+	Update3DReticlePosition();
+	Update2DReticlePosition();
 }
 
 void Player::Draw() {
@@ -64,15 +75,24 @@ void Player::Draw() {
 		bullet->Draw(camera_);
 	}
 	model_->Draw(worldTransform_, *camera_);
+	model3DReticle_->Draw(worldTransform3DReticle_, *camera_);
+}
+
+void Player::DrawUI() {
+	// 2Dレティクルの描画
+	sprite2DReticle_->Draw();
 }
 
 Player::~Player() {
 	for (playerBullet* bullet : bullets_) {
 		delete bullet;
 	}
+	delete sprite2DReticle_;
 }
 
 void Player::MovePlayer() {
+
+
 
 	Vector3 move = {0, 0, 0};
 	// 移動速度
@@ -109,6 +129,14 @@ void Player::MovePlayer() {
 		move.y -= kCharacteaSpeed;
 	}
 
+
+		// ゲームパッドの状態取得
+	XINPUT_STATE joyState;
+	if (Input::GetInstance()->GetJoystickState(0, joyState)) {
+		move.x += (float)joyState.Gamepad.sThumbLX / SHRT_MAX * kCharacteaSpeed;
+		move.y += (float)joyState.Gamepad.sThumbLY / SHRT_MAX * kCharacteaSpeed;
+	}
+
 	worldTransform_.translation_ += move;
 }
 
@@ -121,6 +149,14 @@ void Player::Rotate() {
 	} else if (input_->PushKey(DIK_E)) {
 		worldTransform_.rotation_.y -= kRotSpeed;
 	}
+
+			// ゲームパッドの状態取得
+	XINPUT_STATE joyState;
+	if (Input::GetInstance()->GetJoystickState(0, joyState)) {
+		worldTransform_.rotation_.x += (float)joyState.Gamepad.sThumbRY / SHRT_MAX * kRotSpeed;
+		worldTransform_.rotation_.y -= (float)joyState.Gamepad.sThumbRX / SHRT_MAX * kRotSpeed;
+	}
+
 }
 
 // 攻撃
@@ -129,13 +165,34 @@ void Player::Attack() {
 	if (input_->TriggerKey(DIK_SPACE)) {
 		const float kBulletSpeed = 1.0f;
 		Vector3 velocity(0, 0, kBulletSpeed);
-		velocity = TransformNolmar(velocity, worldTransform_.matWorld_);
+		velocity = worldTransform3DReticle_.translation_ - GetWorldPosition();
+		velocity = Normalize(velocity) * kBulletSpeed;
 
 		playerBullet* newBullet = new playerBullet();
 
 		newBullet->Initialize(model_, GetWorldPosition(), velocity);
 		bullets_.push_back(newBullet);
 	}
+
+	// ゲームパッドの状態取得
+	XINPUT_STATE joyState;
+	//何も接続されてないなら抜ける
+	if (!Input::GetInstance()->GetJoystickState(0, joyState)) {
+		return;
+	}
+	//Rトリガーを押したら発射
+	if (joyState.Gamepad.bRightTrigger > 0) {
+		const float kBulletSpeed = 1.0f;
+		Vector3 velocity(0, 0, kBulletSpeed);
+		velocity = worldTransform3DReticle_.translation_ - GetWorldPosition();
+		velocity = Normalize(velocity) * kBulletSpeed;
+	
+		playerBullet* newBullet = new playerBullet();
+
+		newBullet->Initialize(model_, GetWorldPosition(), velocity);
+		bullets_.push_back(newBullet);
+	}
+
 }
 
 Vector3 Player::GetWorldPosition() {
@@ -149,5 +206,42 @@ Vector3 Player::GetWorldPosition() {
 }
 
 void Player::OnCollision() {};
+
+void Player::Update3DReticlePosition() {
+
+	const float kDistancePlayerTo3DReticle = 10.0f;
+	Vector3 offset = {0, 0, 1.0f};
+	offset = TransformNolmar(offset, worldTransform_.matWorld_);
+
+	offset = Normalize(offset) * kDistancePlayerTo3DReticle;
+
+	worldTransform3DReticle_.translation_ = GetWorldPosition() + offset;
+	UpdateWorldTransform(worldTransform3DReticle_);
+}
+
+void Player::Update2DReticlePosition() {
+
+Vector3 position2DReticle = 
+{
+	worldTransform3DReticle_.matWorld_.m[3][0],
+	worldTransform3DReticle_.matWorld_.m[3][1],
+	worldTransform3DReticle_.matWorld_.m[3][2]
+};
+
+	Matrix4x4 matViewport = MakeViewportMatrix(0, 0, WinApp::kWindowWidth, WinApp::kWindowHeight);
+
+	Matrix4x4 matViewProjectionViewport = 
+		Multiply(
+			Multiply(
+				camera_->matView,
+				camera_->matProjection
+			),
+			matViewport
+		);
+
+	position2DReticle = Transform(position2DReticle, matViewProjectionViewport);
+
+	sprite2DReticle_->SetPosition(Vector2(position2DReticle.x, position2DReticle.y));
+}
 
 void Player::SetParent(const KamataEngine::WorldTransform* parent) { worldTransform_.parent_ = parent; }

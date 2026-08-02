@@ -135,6 +135,17 @@ static KamataEngine::Matrix4x4 MakeAffineMatrix(
 	return Multiply(Multiply(scaleMatrix, rotateMatrix), translateMatrix);
 }
 
+static KamataEngine::Matrix4x4 MakeViewportMatrix(float x, float y, float width, float height) {
+	KamataEngine::Matrix4x4 result{};
+	result.m[0][0] = width / 2.0f;
+	result.m[1][1] = -height / 2.0f; // Y軸を反転
+	result.m[2][2] = 1.0f;
+	result.m[3][0] = x + width / 2.0f;
+	result.m[3][1] = y + height / 2.0f;
+	result.m[3][3] = 1.0f;
+	return result;
+}
+
 static KamataEngine::Vector3 TransformNolmar(const KamataEngine::Vector3& v, const KamataEngine::Matrix4x4& m) {
 
 	KamataEngine::Vector3 result{
@@ -195,4 +206,12 @@ static KamataEngine::Matrix4x4 Inverse(const KamataEngine::Matrix4x4& m) {
 	result.m[3][3] = invDet * Det3x3(m.m[0][0], m.m[0][1], m.m[0][2], m.m[1][0], m.m[1][1], m.m[1][2], m.m[2][0], m.m[2][1], m.m[2][2]);
 
 	return result;
+}
+
+static KamataEngine::Vector3 Normalize(const KamataEngine::Vector3& v) {
+	float length = std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+	if (length > 0.0001f) {
+		return {v.x / length, v.y / length, v.z / length};
+	}
+	return {0.0f, 0.0f, 0.0f}; // ゼロベクトルの場合はそのまま返す
 }
