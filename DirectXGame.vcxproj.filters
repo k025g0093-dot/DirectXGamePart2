@@ -16,40 +16,67 @@
     <Filter Include="シェーダー ファイル">
       <UniqueIdentifier>{718c7f4c-fc51-40ad-a221-b9456a7a1a3c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\タイトルシーンとかのもの">
+      <UniqueIdentifier>{f96b44c6-dc57-49d5-af78-5bcecc37f99d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\ゲームシーン">
+      <UniqueIdentifier>{9d90eab0-b0f1-4899-9fc7-dcfc62fddc0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\player関係">
+      <UniqueIdentifier>{84c206e9-bdd8-40e5-9a64-7e33fb64d35a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\カメラに関するもの">
+      <UniqueIdentifier>{b1480c35-e68b-4737-8ca9-83fd92366b08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\背景とかのモデル群">
+      <UniqueIdentifier>{77090c35-beef-410d-affa-389de4f8d707}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\敵">
+      <UniqueIdentifier>{e45ec725-5e41-40fa-adb3-fa737f62963e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\ワールドトランスフォーム">
+      <UniqueIdentifier>{20e4e92e-24b1-4a71-b51e-49c21dc609d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="SkyDome.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Fade.cpp">
+      <Filter>ソース ファイル\タイトルシーンとかのもの</Filter>
+    </ClCompile>
+    <ClCompile Include="TitleScene.cpp">
+      <Filter>ソース ファイル\タイトルシーンとかのもの</Filter>
     </ClCompile>
     <ClCompile Include="GameScene.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="playerBullet.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="UpdateWorldTransform.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Enemy.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="EnemyBullet.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Plane.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="RailCameraController.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\ゲームシーン</Filter>
     </ClCompile>
     <ClCompile Include="LockOn.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\player関係</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>ソース ファイル\player関係</Filter>
+    </ClCompile>
+    <ClCompile Include="playerBullet.cpp">
+      <Filter>ソース ファイル\player関係</Filter>
+    </ClCompile>
+    <ClCompile Include="RailCameraController.cpp">
+      <Filter>ソース ファイル\カメラに関するもの</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyDome.cpp">
+      <Filter>ソース ファイル\背景とかのモデル群</Filter>
+    </ClCompile>
+    <ClCompile Include="Plane.cpp">
+      <Filter>ソース ファイル\背景とかのモデル群</Filter>
+    </ClCompile>
+    <ClCompile Include="Enemy.cpp">
+      <Filter>ソース ファイル\敵</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyBullet.cpp">
+      <Filter>ソース ファイル\敵</Filter>
+    </ClCompile>
+    <ClCompile Include="UpdateWorldTransform.cpp">
+      <Filter>ソース ファイル\ワールドトランスフォーム</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -105,38 +132,44 @@
     <ClInclude Include="AxisIndicator.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="SkyDome.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="playerBullet.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="UpdateWorldTransform.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="MyMath.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Enemy.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Fade.h">
+      <Filter>ソース ファイル\タイトルシーンとかのもの</Filter>
     </ClInclude>
-    <ClInclude Include="EnemyBullet.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="TitleScene.h">
+      <Filter>ソース ファイル\タイトルシーンとかのもの</Filter>
     </ClInclude>
-    <ClInclude Include="Plane.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameScene.h">
+      <Filter>ソース ファイル\ゲームシーン</Filter>
     </ClInclude>
-    <ClInclude Include="RailCameraController.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Player.h">
+      <Filter>ソース ファイル\player関係</Filter>
     </ClInclude>
     <ClInclude Include="LockOn.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ソース ファイル\player関係</Filter>
+    </ClInclude>
+    <ClInclude Include="playerBullet.h">
+      <Filter>ソース ファイル\player関係</Filter>
+    </ClInclude>
+    <ClInclude Include="RailCameraController.h">
+      <Filter>ソース ファイル\カメラに関するもの</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyDome.h">
+      <Filter>ソース ファイル\背景とかのモデル群</Filter>
+    </ClInclude>
+    <ClInclude Include="Plane.h">
+      <Filter>ソース ファイル\背景とかのモデル群</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.h">
+      <Filter>ソース ファイル\敵</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyBullet.h">
+      <Filter>ソース ファイル\敵</Filter>
+    </ClInclude>
+    <ClInclude Include="UpdateWorldTransform.h">
+      <Filter>ソース ファイル\ワールドトランスフォーム</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
