@@ -12,7 +12,7 @@
 
 // 難易度
 
-enum class DifficultyLevel { kNormal, kHard };
+enum class DifficultyLevel { kEasy, kNormal, kHard };
 
 class GameScene
 
@@ -82,6 +82,6 @@ public:  // 難易度の値を取得したり敵のstatusを変更するため�
 
 	// 最初はノーマルで始める、そこからeasyやhardに変更で
 	DifficultyLevel GetDifficultyLevel() const { return difficultyLevel_; }
-	DifficultyLevel difficultyLevel_ = DifficultyLevel::kNormal; // 難易度の初期値を設定
+	DifficultyLevel difficultyLevel_ = DifficultyLevel::kHard; // 難易度の初期値を設定
 
 };

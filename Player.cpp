@@ -164,15 +164,33 @@ void Player::Rotate() {
 void Player::Attack() {
 
 	if (input_->TriggerKey(DIK_SPACE)) {
-		const float kBulletSpeed = 1.0f;
-		Vector3 velocity(0, 0, kBulletSpeed);
-		velocity = worldTransform3DReticle_.translation_ - GetWorldPosition();
-		velocity = Normalize(velocity) * kBulletSpeed;
+		if (lockOn_->isLockedOn_) {
 
-		playerBullet* newBullet = new playerBullet();
+			Enemy* target = lockOn_->GetTarget();
 
-		newBullet->Initialize(model_, GetWorldPosition(), velocity);
-		bullets_.push_back(newBullet);
+			if (target) {
+				Vector3 targetPos = target->GetWorldPosition();
+				Vector3 playerPos = GetWorldPosition();
+				Vector3 direction = targetPos - playerPos;
+				direction = Normalize(direction);
+				const float kBulletSpeed = 1.0f;
+				Vector3 velocity = direction * kBulletSpeed;
+				playerBullet* newBullet = new playerBullet();
+				newBullet->Initialize(model_, playerPos, velocity);
+				bullets_.push_back(newBullet);
+			}
+
+		} else {
+			const float kBulletSpeed = 1.0f;
+			Vector3 velocity(0, 0, kBulletSpeed);
+			velocity = worldTransform3DReticle_.translation_ - GetWorldPosition();
+			velocity = Normalize(velocity) * kBulletSpeed;
+
+			playerBullet* newBullet = new playerBullet();
+
+			newBullet->Initialize(model_, GetWorldPosition(), velocity);
+			bullets_.push_back(newBullet);
+		}
 	}
 
 	// ゲームパッドの状態取得
