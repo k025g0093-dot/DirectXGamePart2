@@ -1,16 +1,18 @@
 #include "GameScene.h"
 #include "KamataEngine.h"
+#include "SelectLevel.h"
 #include "TitleScene.h"
-
 #include <Windows.h>
 
 using namespace KamataEngine;
 GameScene* gameScene = nullptr;
 TitleScene* titleScene = nullptr;
+SelectLevel* selectLevel = nullptr;
 
 enum class Scene {
 	kUnknown = 0,
 	kTitle,
+	kSelectLevel,
 	kGame,
 };
 
@@ -101,12 +103,25 @@ void ChangeScene() {
 	case Scene::kTitle:
 		if (titleScene->IsFinished()) {
 
-			scene = Scene::kGame;
+			scene = Scene::kSelectLevel;
 			delete titleScene;
 			titleScene = nullptr;
 
+			selectLevel = new SelectLevel;
+			selectLevel->Initialize();
+
+		}
+		break;
+
+	case Scene::kSelectLevel:
+		if (selectLevel->IsFinished()) {
+			scene = Scene::kGame;
+			DifficultyLevel selected = selectLevel->GetSelectedDifficulty();
+			delete selectLevel;
+			selectLevel = nullptr;
 			gameScene = new GameScene;
 			gameScene->Initialize();
+			gameScene->SetDifficultyLevel(selected);
 		}
 		break;
 
@@ -134,6 +149,10 @@ void UpdateScene() {
 
 		titleScene->Update();
 		break;
+	case Scene::kSelectLevel:
+
+		selectLevel->Update();
+		break;
 	case Scene::kGame:
 
 		gameScene->Update();
@@ -150,6 +169,11 @@ void DrawScene() {
 	case Scene::kTitle:
 		titleScene->Draw();
 		break;
+
+	case Scene::kSelectLevel:
+		selectLevel->Draw();
+		break;
+
 	case Scene::kGame:
 		gameScene->Draw();
 		break;

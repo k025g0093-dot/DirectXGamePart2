@@ -78,6 +78,9 @@
     <ClCompile Include="UpdateWorldTransform.cpp">
       <Filter>ソース ファイル\ワールドトランスフォーム</Filter>
     </ClCompile>
+    <ClCompile Include="SelectLevel.cpp">
+      <Filter>ソース ファイル\タイトルシーンとかのもの</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\SpritePS.hlsl">
@@ -170,6 +173,9 @@
     </ClInclude>
     <ClInclude Include="UpdateWorldTransform.h">
       <Filter>ソース ファイル\ワールドトランスフォーム</Filter>
+    </ClInclude>
+    <ClInclude Include="SelectLevel.h">
+      <Filter>ソース ファイル\タイトルシーンとかのもの</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

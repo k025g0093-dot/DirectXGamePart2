@@ -173,6 +173,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="playerBullet.cpp" />
     <ClCompile Include="RailCameraController.cpp" />
+    <ClCompile Include="SelectLevel.cpp" />
     <ClCompile Include="SkyDome.cpp" />
     <ClCompile Include="TitleScene.cpp" />
     <ClCompile Include="UpdateWorldTransform.cpp" />
@@ -286,6 +287,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="playerBullet.h" />
     <ClInclude Include="RailCameraController.h" />
+    <ClInclude Include="SelectLevel.h" />
     <ClInclude Include="SkyDome.h" />
     <ClInclude Include="TitleScene.h" />
     <ClInclude Include="UpdateWorldTransform.h" />
