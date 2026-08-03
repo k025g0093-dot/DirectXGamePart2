@@ -8,16 +8,32 @@
 #include "RailCameraController.h"
 #include "SkyDome.h"
 
+#include "Fade.h"
+
+
 #include <sstream>
 
 // 難易度
+enum class DifficultyLevel { 
+	kEasy, 
+	kNormal,
+	kHard 
+};
 
-enum class DifficultyLevel { kEasy, kNormal, kHard };
+enum class GamePhase {
+	kFadeIn,
+	kPlay,
+	kFadeOut
+};
 
 class GameScene
 
 {
 public:
+
+	GamePhase gamePhase_;
+
+
 	// ワールドトランスフォーム
 	KamataEngine::WorldTransform worldTransform_;
 	// カメラ
@@ -29,6 +45,7 @@ public:
 	// 大枠の初期化、アップデート、描画処理
 	void Initialize();
 	void Update();
+	void GameUpdate();
 	void Draw();
 
 	void CheckAllCollisions();
@@ -55,6 +72,14 @@ public:
 
 	// この先に小分けにしていく関数などを書く
 
+	// 終了フラグ
+	bool finished_ = false;
+	// 終了フラグ
+	bool IsFinished() const { return finished_; }
+
+	//フェードに関する者
+	Fade* fade_ = nullptr;
+
 private:
 	// playerなどのポインタ
 	Player* player_ = nullptr;
@@ -72,6 +97,7 @@ private:
 	KamataEngine::Input* input_ = nullptr;
 
 	bool isDebugCameraActive_ = false;
+
 
 private: // 各エンティティの待機フラグ
 	bool isPopEnemy_ = false;

@@ -1,14 +1,24 @@
-#include "KamataEngine.h"
 #include "GameScene.h"
+#include "KamataEngine.h"
+#include "TitleScene.h"
+
 #include <Windows.h>
 
 using namespace KamataEngine;
 GameScene* gameScene = nullptr;
+TitleScene* titleScene = nullptr;
 
+enum class Scene {
+	kUnknown = 0,
+	kTitle,
+	kGame,
+};
 
+Scene scene = Scene::kTitle;
 
-
-
+void ChangeScene();
+void UpdateScene();
+void DrawScene();
 
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
@@ -23,7 +33,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	gameScene = new GameScene();
 
-
+	titleScene = new TitleScene();
+	titleScene->Initialize();
 
 	//============================
 	// メインループ
@@ -42,9 +53,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		//======================================================================
 
 		// ✅ デバッグキー入力は毎フレーム・シーン切り替えより前にチェック
-		
-		gameScene->Update();
 
+		ChangeScene();
+		UpdateScene();
 
 		//======================================================================
 		// 更新処理ここまで
@@ -58,10 +69,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		dxCommon->PreDraw();
 
-		gameScene->Draw();
+		DrawScene();
 		imguiManager->Draw();
 		AxisIndicator::GetInstance()->Draw();
-
 
 		dxCommon->PostDraw();
 
@@ -83,3 +93,68 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	KamataEngine::Finalize();
 	return 0;
 }
+
+#pragma region ゲームのシーンの切り替え
+void ChangeScene() {
+
+	switch (scene) {
+	case Scene::kTitle:
+		if (titleScene->IsFinished()) {
+
+			scene = Scene::kGame;
+			delete titleScene;
+			titleScene = nullptr;
+
+			gameScene = new GameScene;
+			gameScene->Initialize();
+		}
+		break;
+
+	case Scene::kGame:
+		if (gameScene->IsFinished()) {
+			scene = Scene::kTitle;
+			delete gameScene;
+			gameScene = nullptr;
+
+			titleScene = new TitleScene;
+			titleScene->Initialize();
+		}
+		break;
+
+	default:
+		break;
+	}
+}
+#pragma endregion
+
+#pragma region ゲームの更新処理
+void UpdateScene() {
+	switch (scene) {
+	case Scene::kTitle:
+
+		titleScene->Update();
+		break;
+	case Scene::kGame:
+
+		gameScene->Update();
+		break;
+	default:
+		break;
+	}
+}
+#pragma endregion
+
+#pragma region ゲームシーンの描画
+void DrawScene() {
+	switch (scene) {
+	case Scene::kTitle:
+		titleScene->Draw();
+		break;
+	case Scene::kGame:
+		gameScene->Draw();
+		break;
+	default:
+		break;
+	}
+}
+#pragma endregion

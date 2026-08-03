@@ -5,6 +5,9 @@ using namespace KamataEngine;
 GameScene::GameScene() { Initialize(); }
 
 void GameScene::Initialize() {
+
+	gamePhase_ = GamePhase::kFadeIn;
+
 #pragma region 基礎システムの初期化
 	worldTransform_.Initialize();
 	camera_.Initialize();
@@ -12,13 +15,17 @@ void GameScene::Initialize() {
 	camera_.UpdateMatrix();
 #pragma endregion
 
+#pragma region インスタン生成(new)
 	// プレイヤーのインスタンス
 	player_ = new Player();
 	skyDome_ = new SkyDome();
 	plane_ = new Plane();
 	lockOn_ = new LockOn();
-
+	fade_ = new Fade();
 	railCameraController_ = new RailCameraController();
+	debugCamera_ = new DebugCamera(1280, 720);
+
+#pragma endregion
 
 	// プレイヤーのモデル生成
 	TextureManager::Load("2DReticle.png");
@@ -32,8 +39,6 @@ void GameScene::Initialize() {
 	skyDomeModel_ = Model::CreateFromOBJ("skydome", true);
 	planeModel_ = Model::CreateFromOBJ("plane", true);
 
-	debugCamera_ = new DebugCamera(1280, 720);
-
 #pragma region カメラコントローラーの設定
 	railCameraController_->Initialize();
 	railCameraController_->SetTarget(player_);
@@ -41,6 +46,8 @@ void GameScene::Initialize() {
 
 	PrimitiveDrawer::GetInstance()->SetCamera(&railCameraController_->GetCamera());
 #pragma endregion
+
+#pragma region キャラクターの初期化
 
 	Vector3 playerPosition = {0, 5, 20};
 	player_->Initialize(playerModel_, &railCameraController_->GetCamera(), playerPosition);
@@ -55,10 +62,15 @@ void GameScene::Initialize() {
 	newEnemy->GetEnemyBulletModel(enemyBulletModel_);
 	enemies_.push_back(newEnemy);
 
+#pragma endregion
+
+#pragma region 各オブジェクトの初期化
+
 	skyDome_->Initialize(skyDomeModel_);
 	plane_->Initialize(planeModel_);
-
+	fade_->Initialize();
 	lockOn_->Initialize();
+#pragma endregion
 
 	// キー入力の初期化
 	input_ = Input::GetInstance();
@@ -66,13 +78,39 @@ void GameScene::Initialize() {
 	AxisIndicator::GetInstance()->SetVisible(true);
 	AxisIndicator::GetInstance()->SetTargetCamera(&debugCamera_->GetCamera());
 
-
-
 	LoadEnemyPopData();
+	fade_->Start(Fade::Status::FadeIn, 1.0f);
 }
 
 void GameScene::Update() {
 
+	fade_->Update();
+	switch (gamePhase_) {
+	case GamePhase::kFadeIn:
+		if (!fade_->IsFinished()) {
+			gamePhase_ = GamePhase::kPlay;
+		}
+		break;
+
+	case GamePhase::kPlay:
+
+		// ゲーム中の処理
+		GameUpdate();
+
+		break;
+
+	case GamePhase::kFadeOut:
+		if (fade_->IsFinished()) {
+			finished_ = true;
+		}
+
+		break;
+	default:
+		break;
+	}
+}
+
+void GameScene::GameUpdate() {
 #ifdef _DEBUG
 	if (input_->TriggerKey(DIK_0)) {
 		isDebugCameraActive_ = true;
@@ -91,7 +129,7 @@ void GameScene::Update() {
 	railCameraController_->Update();
 	skyDome_->Update();
 	plane_->Update();
-	
+
 	lockOn_->Update(player_, enemies_, railCameraController_->GetCamera());
 
 	player_->Updata();
@@ -135,15 +173,13 @@ void GameScene::Draw() {
 	}
 	Model::PostDraw();
 
-		// UIの描画
+	// UIの描画
 	Sprite::PreDraw();
 
-	//player_->DrawUI();
+	// player_->DrawUI();
 	lockOn_->Draw();
 
 	Sprite::PostDraw();
-
-
 }
 
 GameScene::~GameScene() {
@@ -253,9 +289,9 @@ void GameScene::LoadEnemyPopData() {
 
 void GameScene::UpdateEnemyPopCommands() {
 
-	//待機処理
+	// 待機処理
 	if (isPopEnemy_) {
-		//時間を減らす
+		// 時間を減らす
 		popEnemyWaitTime_--;
 		if (popEnemyWaitTime_ <= 0) {
 			isPopEnemy_ = false;
@@ -296,7 +332,7 @@ void GameScene::UpdateEnemyPopCommands() {
 			// 待機処理を追加する場合はここに記述
 			std::getline(line_stream, word, (','));
 
-			//待ち時間
+			// 待ち時間
 			int32_t waitTime = atoi(word.c_str());
 
 			isPopEnemy_ = true;
@@ -312,5 +348,4 @@ void GameScene::SpawnEnemy(const KamataEngine::Vector3& position) {
 	enemy->Initialize(enemyModel_, &railCameraController_->GetCamera(), position);
 	enemy->GetEnemyBulletModel(enemyBulletModel_);
 	enemies_.push_back(enemy);
-
 }

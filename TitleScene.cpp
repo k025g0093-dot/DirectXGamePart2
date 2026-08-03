@@ -32,23 +32,23 @@ void TitleScene::Update() {
 
 	fade_->Update();
 	
-	switch (phase_) {
-	case Phese::kFadeIn:
+	switch (gamePhase_) {
+	case GamePhase::kFadeIn:
 		// フェードインが完全に終わるのを待つ
 		if (fade_->IsFinished()) {
-			phase_ = Phese::kMain;
+			gamePhase_ = GamePhase::kPlay;
 		}
 		break;
 
-	case Phese::kMain:
+	case GamePhase::kPlay:
 		// メイン待機中：スペースが押されたらフェードアウト開始
 		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
-			phase_ = Phese::kFadeOut; // 次の状態へ
+			gamePhase_ = GamePhase::kFadeOut; // 次の状態へ
 		}
 		break;
 
-	case Phese::kFadeOut:
+	case GamePhase::kFadeOut:
 		// フェードアウト中：フェードが完全に終わったら、ようやく終了フラグを立てる
 		if (fade_->IsFinished()) {
 			finished_ = true; // ここで初めて main.cpp がシーンを切り替えてくれる

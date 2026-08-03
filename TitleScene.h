@@ -7,12 +7,13 @@
 class TitleScene {
 public:
 
-	enum class Phese { 
+	enum class GamePhase {
 		kFadeIn,
-		kMain,
-		kFadeOut,
+		kPlay,
+		kFadeOut
 	};
-	Phese phase_ = Phese::kFadeIn;
+
+	GamePhase gamePhase_ = GamePhase::kFadeIn;
 	// 初期化関数
 	void Initialize();
 	// 更新処理
