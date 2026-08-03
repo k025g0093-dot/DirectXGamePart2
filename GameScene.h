@@ -2,13 +2,17 @@
 #include "KamataEngine.h"
 #include "Plane.h"
 
-#include "RailCameraController.h"
 #include "Enemy.h"
-#include "Player.h"
-#include "SkyDome.h"
 #include "LockOn.h"
+#include "Player.h"
+#include "RailCameraController.h"
+#include "SkyDome.h"
 
 #include <sstream>
+
+// 難易度
+
+enum class DifficultyLevel { kEasy, kNormal, kHard };
 
 class GameScene
 
@@ -38,22 +42,20 @@ public:
 	KamataEngine::Model* enemyModel_ = nullptr;
 	KamataEngine::Model* enemyBulletModel_ = nullptr;
 
-	KamataEngine::Model* skyDomeModel_=nullptr;
+	KamataEngine::Model* skyDomeModel_ = nullptr;
 	KamataEngine::Model* planeModel_ = nullptr;
 
-	//敵のポップデータ
+	// 敵のポップデータ
 	std::stringstream enemyPopCommands;
 	void LoadEnemyPopData();
 	void UpdateEnemyPopCommands();
 
-	//敵の発生位置
+	// 敵の発生位置
 	void SpawnEnemy(const KamataEngine::Vector3& position);
-
 
 	// この先に小分けにしていく関数などを書く
 
-	private :
-
+private:
 	// playerなどのポインタ
 	Player* player_ = nullptr;
 	Enemy* enemy_ = nullptr;
@@ -71,9 +73,15 @@ public:
 
 	bool isDebugCameraActive_ = false;
 
-private://各エンティティの待機フラグ
+private: // 各エンティティの待機フラグ
 	bool isPopEnemy_ = false;
 	int32_t popEnemyWaitTime_ = 0;
 
+public:  // 難易度の値を取得したり敵のstatusを変更するための関数
+	void SetDifficultyLevel(DifficultyLevel level) { difficultyLevel_ = level; }
+
+	// 最初はノーマルで始める、そこからeasyやhardに変更で
+	DifficultyLevel GetDifficultyLevel() const { return difficultyLevel_; }
+	DifficultyLevel difficultyLevel_ = DifficultyLevel::kHard; // 難易度の初期値を設定
 
 };

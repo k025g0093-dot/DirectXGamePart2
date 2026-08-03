@@ -77,7 +77,8 @@ void Enemy::EnemyShotUpdate() {
 
 	//assert(player_);
 
-	const float kBulletSpeed = 0.5f;
+	float difficlutRate = gameScene_->GetDifficultyLevel() == DifficultyLevel::kEasy ? 0.5f : (gameScene_->GetDifficultyLevel() == DifficultyLevel::kNormal ? 1.0f : 1.5f);
+	const float kBulletSpeed = 0.5f * difficlutRate;
 
 	Vector3 directionToPlayer = player_->GetWorldPosition() - GetWorldPosition();
 
