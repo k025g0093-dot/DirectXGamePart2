@@ -1,3 +1,4 @@
+#include "GameOverScene.h"
 #include "GameScene.h"
 #include "KamataEngine.h"
 #include "SelectLevel.h"
@@ -9,11 +10,14 @@ GameScene* gameScene = nullptr;
 TitleScene* titleScene = nullptr;
 SelectLevel* selectLevel = nullptr;
 
+GameOverScene* gameOverScene = nullptr;
+
 enum class Scene {
 	kUnknown = 0,
 	kTitle,
 	kSelectLevel,
 	kGame,
+	kGameOver,
 };
 
 Scene scene = Scene::kTitle;
@@ -109,7 +113,6 @@ void ChangeScene() {
 
 			selectLevel = new SelectLevel;
 			selectLevel->Initialize();
-
 		}
 		break;
 
@@ -127,13 +130,24 @@ void ChangeScene() {
 
 	case Scene::kGame:
 		if (gameScene->IsFinished()) {
-			scene = Scene::kTitle;
+			scene = Scene::kGameOver;
 			delete gameScene;
 			gameScene = nullptr;
 
+			gameOverScene = new GameOverScene;
+			gameOverScene->Initialize();
+		}
+		break;
+
+	case Scene::kGameOver:
+		if (gameOverScene->IsFinished()) {
+			scene = Scene::kTitle;
+			delete gameOverScene;
+			gameOverScene = nullptr;
 			titleScene = new TitleScene;
 			titleScene->Initialize();
 		}
+
 		break;
 
 	default:
@@ -157,6 +171,11 @@ void UpdateScene() {
 
 		gameScene->Update();
 		break;
+
+	case Scene::kGameOver:
+		gameOverScene->Update();
+		break;
+
 	default:
 		break;
 	}
@@ -177,6 +196,11 @@ void DrawScene() {
 	case Scene::kGame:
 		gameScene->Draw();
 		break;
+
+	case Scene::kGameOver:
+		gameOverScene->Draw();
+		break;
+
 	default:
 		break;
 	}

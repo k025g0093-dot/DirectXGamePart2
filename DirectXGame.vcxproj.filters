@@ -81,6 +81,9 @@
     <ClCompile Include="SelectLevel.cpp">
       <Filter>ソース ファイル\タイトルシーンとかのもの</Filter>
     </ClCompile>
+    <ClCompile Include="GameOverScene.cpp">
+      <Filter>ソース ファイル\タイトルシーンとかのもの</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\SpritePS.hlsl">
@@ -175,6 +178,9 @@
       <Filter>ソース ファイル\ワールドトランスフォーム</Filter>
     </ClInclude>
     <ClInclude Include="SelectLevel.h">
+      <Filter>ソース ファイル\タイトルシーンとかのもの</Filter>
+    </ClInclude>
+    <ClInclude Include="GameOverScene.h">
       <Filter>ソース ファイル\タイトルシーンとかのもの</Filter>
     </ClInclude>
   </ItemGroup>

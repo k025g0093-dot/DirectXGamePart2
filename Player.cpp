@@ -1,11 +1,11 @@
 #define NOMINMAX
 #include "Player.h"
-#include "MyMath.h"
 #include "Enemy.h"
+#include "LockOn.h"
+#include "MyMath.h"
 #include <algorithm>
 #include <cassert>
 #include <numbers>
-#include "LockOn.h"
 
 #ifdef _DEBUG
 #include <imgui.h>
@@ -14,7 +14,6 @@
 using namespace KamataEngine;
 
 Player::Player() {}
-bool isHit = false;
 
 void Player::Initialize(
     KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position
@@ -66,6 +65,10 @@ void Player::Updata() {
 		bullet->Update();
 	}
 
+	if (incvincibleTimer_ > 0) {
+		incvincibleTimer_--;
+	}
+
 	UpdateWorldTransform(worldTransform_);
 	Update3DReticlePosition();
 	Update2DReticlePosition();
@@ -93,8 +96,6 @@ Player::~Player() {
 
 void Player::MovePlayer() {
 
-
-
 	Vector3 move = {0, 0, 0};
 	// 移動速度
 	const float kCharacteaSpeed = 0.2f;
@@ -112,11 +113,9 @@ void Player::MovePlayer() {
 #ifdef _DEBUG
 	ImGui::Begin("PlayerPostion");
 	ImGui::DragFloat3("position", &worldTransform_.translation_.x, 0.01f, -100.0f, 100.0f);
-
 	ImGui::End();
 #endif
 
-	// 横移動
 	if (input_->PushKey(DIK_LEFT) || input_->PushKey(DIK_A)) {
 		move.x -= kCharacteaSpeed;
 	} else if (input_->PushKey(DIK_RIGHT) || input_->PushKey(DIK_D)) {
@@ -130,8 +129,7 @@ void Player::MovePlayer() {
 		move.y -= kCharacteaSpeed;
 	}
 
-
-		// ゲームパッドの状態取得
+	// ゲームパッドの状態取得
 	XINPUT_STATE joyState;
 	if (Input::GetInstance()->GetJoystickState(0, joyState)) {
 		move.x += (float)joyState.Gamepad.sThumbLX / SHRT_MAX * kCharacteaSpeed;
@@ -151,13 +149,12 @@ void Player::Rotate() {
 		worldTransform_.rotation_.y -= kRotSpeed;
 	}
 
-			// ゲームパッドの状態取得
+	// ゲームパッドの状態取得
 	XINPUT_STATE joyState;
 	if (Input::GetInstance()->GetJoystickState(0, joyState)) {
 		worldTransform_.rotation_.x += (float)joyState.Gamepad.sThumbRY / SHRT_MAX * kRotSpeed;
 		worldTransform_.rotation_.y -= (float)joyState.Gamepad.sThumbRX / SHRT_MAX * kRotSpeed;
 	}
-
 }
 
 // 攻撃
@@ -195,11 +192,11 @@ void Player::Attack() {
 
 	// ゲームパッドの状態取得
 	XINPUT_STATE joyState;
-	//何も接続されてないなら抜ける
+	// 何も接続されてないなら抜ける
 	if (!Input::GetInstance()->GetJoystickState(0, joyState)) {
 		return;
 	}
-	//Rトリガーを押したら発射
+	// Rトリガーを押したら発射
 	if (joyState.Gamepad.bRightTrigger > 0) {
 
 		if (lockOn_->isLockedOn_) {
@@ -218,7 +215,7 @@ void Player::Attack() {
 				bullets_.push_back(newBullet);
 			}
 
-		}else{
+		} else {
 			const float kBulletSpeed = 1.0f;
 			Vector3 velocity(0, 0, kBulletSpeed);
 			velocity = worldTransform3DReticle_.translation_ - GetWorldPosition();
@@ -230,7 +227,6 @@ void Player::Attack() {
 			bullets_.push_back(newBullet);
 		}
 	}
-
 }
 
 Vector3 Player::GetWorldPosition() {
@@ -243,7 +239,18 @@ Vector3 Player::GetWorldPosition() {
 	return worldPos;
 }
 
-void Player::OnCollision() {};
+void Player::OnCollision() {
+	// 無敵時間中はダメージを受けない
+	if (incvincibleTimer_ > 0) {
+		return;
+	}
+	hp_--;
+	if (hp_ <= 0) {
+		isDead_ = true;
+	} else {
+		incvincibleTimer_ = incvincibleTimerMax_; // 無敵開始
+	}
+}
 
 void Player::Update3DReticlePosition() {
 
@@ -259,23 +266,11 @@ void Player::Update3DReticlePosition() {
 
 void Player::Update2DReticlePosition() {
 
-Vector3 position2DReticle = 
-{
-	worldTransform3DReticle_.matWorld_.m[3][0],
-	worldTransform3DReticle_.matWorld_.m[3][1],
-	worldTransform3DReticle_.matWorld_.m[3][2]
-};
+	Vector3 position2DReticle = {worldTransform3DReticle_.matWorld_.m[3][0], worldTransform3DReticle_.matWorld_.m[3][1], worldTransform3DReticle_.matWorld_.m[3][2]};
 
 	Matrix4x4 matViewport = MakeViewportMatrix(0, 0, WinApp::kWindowWidth, WinApp::kWindowHeight);
 
-	Matrix4x4 matViewProjectionViewport = 
-		Multiply(
-			Multiply(
-				camera_->matView,
-				camera_->matProjection
-			),
-			matViewport
-		);
+	Matrix4x4 matViewProjectionViewport = Multiply(Multiply(camera_->matView, camera_->matProjection), matViewport);
 
 	position2DReticle = Transform(position2DReticle, matViewProjectionViewport);
 

@@ -97,6 +97,11 @@ void GameScene::Update() {
 		// ゲーム中の処理
 		GameUpdate();
 
+		if (player_->IsDead()) {
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			gamePhase_ = GamePhase::kFadeOut;
+		}
+
 		break;
 
 	case GamePhase::kFadeOut:
