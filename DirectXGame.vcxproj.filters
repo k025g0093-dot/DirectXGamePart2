@@ -37,6 +37,9 @@
     <Filter Include="ソース ファイル\ワールドトランスフォーム">
       <UniqueIdentifier>{20e4e92e-24b1-4a71-b51e-49c21dc609d7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\タイトルシーンとかのもの\リザルトとか">
+      <UniqueIdentifier>{dcbaa8c1-62c0-4db7-a17f-630b5a414cbb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -81,8 +84,11 @@
     <ClCompile Include="SelectLevel.cpp">
       <Filter>ソース ファイル\タイトルシーンとかのもの</Filter>
     </ClCompile>
+    <ClCompile Include="GameCreaScene.cpp">
+      <Filter>ソース ファイル\タイトルシーンとかのもの\リザルトとか</Filter>
+    </ClCompile>
     <ClCompile Include="GameOverScene.cpp">
-      <Filter>ソース ファイル\タイトルシーンとかのもの</Filter>
+      <Filter>ソース ファイル\タイトルシーンとかのもの\リザルトとか</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -180,8 +186,11 @@
     <ClInclude Include="SelectLevel.h">
       <Filter>ソース ファイル\タイトルシーンとかのもの</Filter>
     </ClInclude>
+    <ClInclude Include="GameCreaScene.h">
+      <Filter>ソース ファイル\タイトルシーンとかのもの\リザルトとか</Filter>
+    </ClInclude>
     <ClInclude Include="GameOverScene.h">
-      <Filter>ソース ファイル\タイトルシーンとかのもの</Filter>
+      <Filter>ソース ファイル\タイトルシーンとかのもの\リザルトとか</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

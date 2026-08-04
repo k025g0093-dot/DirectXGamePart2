@@ -100,6 +100,11 @@ void GameScene::Update() {
 		if (player_->IsDead()) {
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
 			gamePhase_ = GamePhase::kFadeOut;
+		} else if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+			// クリア（追加）
+			isGameClear_ = true;
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			gamePhase_ = GamePhase::kFadeOut;
 		}
 
 		break;

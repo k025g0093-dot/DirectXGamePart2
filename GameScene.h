@@ -80,6 +80,8 @@ public:
 	//フェードに関する者
 	Fade* fade_ = nullptr;
 
+	bool isGameClear_ = false; // ゲームクリアフラグ
+
 private:
 	// playerなどのポインタ
 	Player* player_ = nullptr;

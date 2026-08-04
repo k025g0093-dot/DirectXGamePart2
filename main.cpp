@@ -1,3 +1,4 @@
+#include "GameCreaScene.h"
 #include "GameOverScene.h"
 #include "GameScene.h"
 #include "KamataEngine.h"
@@ -11,6 +12,7 @@ TitleScene* titleScene = nullptr;
 SelectLevel* selectLevel = nullptr;
 
 GameOverScene* gameOverScene = nullptr;
+GameCreaScene* gameCreaScene = nullptr;
 
 enum class Scene {
 	kUnknown = 0,
@@ -18,6 +20,7 @@ enum class Scene {
 	kSelectLevel,
 	kGame,
 	kGameOver,
+	kGameCrea,
 };
 
 Scene scene = Scene::kTitle;
@@ -130,12 +133,20 @@ void ChangeScene() {
 
 	case Scene::kGame:
 		if (gameScene->IsFinished()) {
-			scene = Scene::kGameOver;
-			delete gameScene;
-			gameScene = nullptr;
+			if (gameScene->isGameClear_) {
+				scene = Scene::kGameCrea;
+				delete gameScene;
+				gameScene = nullptr;
+				gameCreaScene = new GameCreaScene;
+				gameCreaScene->Initialize();
+			} else {
+				scene = Scene::kGameOver;
+				delete gameScene;
+				gameScene = nullptr;
 
-			gameOverScene = new GameOverScene;
-			gameOverScene->Initialize();
+				gameOverScene = new GameOverScene;
+				gameOverScene->Initialize();
+			}
 		}
 		break;
 
@@ -144,6 +155,17 @@ void ChangeScene() {
 			scene = Scene::kTitle;
 			delete gameOverScene;
 			gameOverScene = nullptr;
+			titleScene = new TitleScene;
+			titleScene->Initialize();
+		}
+
+		break;
+
+	case Scene::kGameCrea:
+		if (gameCreaScene->IsFinished()) {
+			scene = Scene::kTitle;
+			delete gameCreaScene;
+			gameCreaScene = nullptr;
 			titleScene = new TitleScene;
 			titleScene->Initialize();
 		}
@@ -176,6 +198,10 @@ void UpdateScene() {
 		gameOverScene->Update();
 		break;
 
+	case Scene::kGameCrea:
+		gameCreaScene->Update();
+		break;
+
 	default:
 		break;
 	}
@@ -189,7 +215,6 @@ void DrawScene() {
 		titleScene->Draw();
 		break;
 
-
 	case Scene::kSelectLevel:
 		selectLevel->Draw();
 		break;
@@ -200,6 +225,10 @@ void DrawScene() {
 
 	case Scene::kGameOver:
 		gameOverScene->Draw();
+		break;
+
+	case Scene::kGameCrea:
+		gameCreaScene->Draw();
 		break;
 
 	default:
