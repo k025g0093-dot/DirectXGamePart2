@@ -58,6 +58,7 @@ void GameScene::Initialize() {
 	Vector3 enemyPosition = {0, 0, 10};
 
 	Enemy* newEnemy = new Enemy();
+	newEnemy->SetGameScene(this);  
 	newEnemy->Initialize(enemyModel_, &railCameraController_->GetCamera(), {5, 0, 10});
 	newEnemy->GetEnemyBulletModel(enemyBulletModel_);
 	enemies_.push_back(newEnemy);
@@ -100,12 +101,12 @@ void GameScene::Update() {
 		if (player_->IsDead()) {
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
 			gamePhase_ = GamePhase::kFadeOut;
-		} else if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-			// クリア（追加）
-			isGameClear_ = true;
-			fade_->Start(Fade::Status::FadeOut, 1.0f);
-			gamePhase_ = GamePhase::kFadeOut;
-		}
+		} //else if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+		//	// クリア（追加）
+		//	isGameClear_ = true;
+		//	fade_->Start(Fade::Status::FadeOut, 1.0f);
+		//	gamePhase_ = GamePhase::kFadeOut;
+		//}
 
 		break;
 
@@ -148,6 +149,14 @@ void GameScene::GameUpdate() {
 		enemy->SetPlayer(player_);
 		enemy->SetGameScene(this);
 	}
+
+	enemies_.remove_if([](Enemy* enemy) {
+		if (enemy->IsDead()) {
+			delete enemy;
+			return true;
+		}
+		return false;
+	});
 
 	bullets_.remove_if([](EnemyBullet* bullet) {
 		if (bullet->IsDead()) {
@@ -355,6 +364,7 @@ void GameScene::UpdateEnemyPopCommands() {
 
 void GameScene::SpawnEnemy(const KamataEngine::Vector3& position) {
 	Enemy* enemy = new Enemy();
+	enemy->SetGameScene(this);  
 	enemy->Initialize(enemyModel_, &railCameraController_->GetCamera(), position);
 	enemy->GetEnemyBulletModel(enemyBulletModel_);
 	enemies_.push_back(enemy);

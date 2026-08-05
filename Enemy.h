@@ -32,9 +32,7 @@ public:
 	void OnCollision();
 
 	void SetGameScene(GameScene* gameScene) { gameScene_ = gameScene; }
-	void GetEnemyBulletModel(KamataEngine::Model* enemyBulletModel_) 
-	{ bulletModel_ = enemyBulletModel_; }
-
+	void GetEnemyBulletModel(KamataEngine::Model* enemyBulletModel_) { bulletModel_ = enemyBulletModel_; }
 
 private:
 	// 3Dモデルで必要なモデルの呼び出し
@@ -46,6 +44,13 @@ private:
 
 	KamataEngine::Model* bulletModel_ = nullptr;
 
+	// 敵のHP
+	int32_t hp_ = {};
+	// 敵HPの最大値
+	int32_t kMaxHp = {};
+	// 30Fの無敵時間
+	int32_t incvincibleTimer_ = 0;
+	int32_t incvincibleTimerMax_ = 15;
 
 
 	GameScene* gameScene_ = nullptr;

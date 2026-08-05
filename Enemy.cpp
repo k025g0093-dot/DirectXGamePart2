@@ -1,13 +1,13 @@
 #include "Enemy.h"
-#include "UpdateWorldTransform.h"
-#include"Player.h"
 #include "GameScene.h"
+#include "Player.h"
+#include "UpdateWorldTransform.h"
 
 using namespace KamataEngine;
 
 void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position) {
 
-	//assert(model); // セッターにモデルを入れる
+	// assert(model); // セッターにモデルを入れる
 	model_ = model;
 
 	worldTransform_.Initialize();
@@ -16,33 +16,51 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 	velocity_ = {0, 0, -0.01f};
 	camera_ = camera;
 
+	switch (gameScene_->GetDifficultyLevel()) {
+
+	case DifficultyLevel::kEasy:
+		kMaxHp = 3;
+		break;
+
+	case DifficultyLevel::kNormal:
+		kMaxHp = 5;
+		break;
+
+	case DifficultyLevel::kHard:
+		kMaxHp = 8;
+		break;
+	}
+
+	hp_ = kMaxHp;
+
 	InitApproach();
 }
 
 void Enemy::Update() {
+	if (!isDead_) {
 
-	switch (phase_) {
-	case Phase::Approach:
+		switch (phase_) {
+		case Phase::Approach:
 
-		UpdateApproach();
+			UpdateApproach();
 
-		break;
-	case Phase::Leave:
+			break;
+		case Phase::Leave:
 
-		UpdateLeave();
+			UpdateLeave();
 
-		break;
-	default:
-		break;
+			break;
+		default:
+			break;
+		}
+
+		UpdateWorldTransform(worldTransform_);
 	}
-
-	UpdateWorldTransform(worldTransform_);
 }
 
-void Enemy::Draw() { 
-
-	model_->Draw(worldTransform_, *camera_);
-
+void Enemy::Draw() {
+	if (!isDead_)
+		model_->Draw(worldTransform_, *camera_);
 }
 
 void Enemy::InitApproach() { kShotTimer = kFireInterval; }
@@ -57,15 +75,16 @@ void Enemy::UpdateApproach() {
 		phase_ = Phase::Leave;
 	}
 
-	
-	--kShotTimer; 
+	--kShotTimer;
 
 	if (kShotTimer < 0) {
 		EnemyShotUpdate();
 		kShotTimer = kFireInterval;
 	}
 
-
+	if (incvincibleTimer_ > 0) {
+		incvincibleTimer_--;
+	}
 }
 
 void Enemy::UpdateLeave() {
@@ -75,18 +94,14 @@ void Enemy::UpdateLeave() {
 
 void Enemy::EnemyShotUpdate() {
 
-	//assert(player_);
+	// assert(player_);
 
 	float difficlutRate = gameScene_->GetDifficultyLevel() == DifficultyLevel::kEasy ? 0.5f : (gameScene_->GetDifficultyLevel() == DifficultyLevel::kNormal ? 1.0f : 1.5f);
 	const float kBulletSpeed = 0.5f * difficlutRate;
 
 	Vector3 directionToPlayer = player_->GetWorldPosition() - GetWorldPosition();
 
-	float length = sqrt(
-		directionToPlayer.x * directionToPlayer.x 
-		+ directionToPlayer.y * directionToPlayer.y 
-		+ directionToPlayer.z * directionToPlayer.z
-	);
+	float length = sqrt(directionToPlayer.x * directionToPlayer.x + directionToPlayer.y * directionToPlayer.y + directionToPlayer.z * directionToPlayer.z);
 
 	// ゼロ除算チェック
 	if (length > 0.0001f) {
@@ -96,19 +111,26 @@ void Enemy::EnemyShotUpdate() {
 	}
 
 	// 速度 = 正規化された方向 × スピード
-	Vector3 velocity = {
-		directionToPlayer.x * kBulletSpeed,
-		directionToPlayer.y * kBulletSpeed,
-		directionToPlayer.z * kBulletSpeed
-	};
+	Vector3 velocity = {directionToPlayer.x * kBulletSpeed, directionToPlayer.y * kBulletSpeed, directionToPlayer.z * kBulletSpeed};
 
 	EnemyBullet* newBullet = new EnemyBullet();
 	newBullet->Initialize(bulletModel_, GetWorldPosition(), velocity);
 	gameScene_->AddEnemyBullet(newBullet);
-
 }
 
-void Enemy::OnCollision() {};
+void Enemy::OnCollision() {
+
+	// 無敵時間中はダメージを受けない
+	if (incvincibleTimer_ > 0) {
+		return;
+	}
+	hp_--;
+	if (hp_ <= 0) {
+		isDead_ = true;
+	} else {
+		incvincibleTimer_ = incvincibleTimerMax_; // 無敵開始
+	}
+};
 
 Vector3 Enemy::GetWorldPosition() {
 	Vector3 worldPos{};
@@ -119,5 +141,3 @@ Vector3 Enemy::GetWorldPosition() {
 
 	return worldPos;
 }
-
-
