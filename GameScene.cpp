@@ -259,10 +259,10 @@ void GameScene::CheckAllCollisions() {
 
 			// 距離を計算
 			float distance = sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
-			float playerRadius = 1.0f;
+			float EnemyRadius = enemy->GetCollisionRadius(); // 固定1.0fを置き換え
 			float bulletRadius = 0.5f;
 
-			if (distance < playerRadius + bulletRadius) {
+			if (distance < EnemyRadius + bulletRadius) {
 				// 地キャラの衝突判定
 				enemy->OnCollision();
 				// 敵弾の衝突判定のコールバック
@@ -334,6 +334,11 @@ void GameScene::UpdateEnemyPopCommands() {
 
 		if (word.find("POP") == 0) {
 
+			// 敵タイプの読み取り
+			std::getline(line_stream, word, (','));
+			int32_t typeId = std::atoi(word.c_str());
+			EnemyType type = static_cast<EnemyType>(typeId);
+
 			// X座標読み取り
 			std::getline(line_stream, word, (','));
 			float x = (float)std::atof(word.c_str());
@@ -346,7 +351,7 @@ void GameScene::UpdateEnemyPopCommands() {
 			std::getline(line_stream, word, (','));
 			float z = (float)std::atof(word.c_str());
 
-			SpawnEnemy({x, y, z});
+			SpawnEnemy(type,{x, y, z});
 		} else if (word.find("WAIT") == 0) {
 			// 待機処理を追加する場合はここに記述
 			std::getline(line_stream, word, (','));
@@ -362,9 +367,10 @@ void GameScene::UpdateEnemyPopCommands() {
 	}
 }
 
-void GameScene::SpawnEnemy(const KamataEngine::Vector3& position) {
+void GameScene::SpawnEnemy(EnemyType type,const KamataEngine::Vector3& position) {
 	Enemy* enemy = new Enemy();
 	enemy->SetGameScene(this);  
+	enemy->SetEnemyType(type); 
 	enemy->Initialize(enemyModel_, &railCameraController_->GetCamera(), position);
 	enemy->GetEnemyBulletModel(enemyBulletModel_);
 	enemies_.push_back(enemy);

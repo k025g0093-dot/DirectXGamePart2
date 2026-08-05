@@ -3,6 +3,13 @@
 #include "KamataEngine.h"
 #include "MyMath.h"
 
+enum class EnemyType {
+
+	kNormal, // 既存
+	kTank,   // タンク
+	kZigzag,//ジグザグに動く敵
+};
+
 enum class Phase {
 	Approach, // 接近
 	Leave,    // 離脱
@@ -34,6 +41,12 @@ public:
 	void SetGameScene(GameScene* gameScene) { gameScene_ = gameScene; }
 	void GetEnemyBulletModel(KamataEngine::Model* enemyBulletModel_) { bulletModel_ = enemyBulletModel_; }
 
+	EnemyType enemyType_ = EnemyType::kNormal;
+	void SetEnemyType(EnemyType type) { enemyType_ = type; }
+
+	float collisionRadius_ = 1.0f;
+	float GetCollisionRadius() const { return collisionRadius_; }
+
 private:
 	// 3Dモデルで必要なモデルの呼び出し
 	KamataEngine::Model* model_ = nullptr;
@@ -52,6 +65,9 @@ private:
 	int32_t incvincibleTimer_ = 0;
 	int32_t incvincibleTimerMax_ = 15;
 
+	float circleTimer_ = 0.0f;  // 円運動の進行角（フレームごとに加算）
+	float circleRadius_ = 3.0f; // 円の半径
+	KamataEngine::Vector3 circleCenter_ = {}; // 円の中心（スポーン位置）
 
 	GameScene* gameScene_ = nullptr;
 
@@ -64,4 +80,7 @@ private:
 	void UpdateApproach();
 	void UpdateLeave();
 	void EnemyShotUpdate();
+
+
+
 };

@@ -68,7 +68,7 @@ public:
 	void UpdateEnemyPopCommands();
 
 	// 敵の発生位置
-	void SpawnEnemy(const KamataEngine::Vector3& position);
+	void SpawnEnemy(EnemyType type,const KamataEngine::Vector3& position);
 
 	// この先に小分けにしていく関数などを書く
 

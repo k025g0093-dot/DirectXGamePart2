@@ -16,8 +16,9 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 	velocity_ = {0, 0, -0.01f};
 	camera_ = camera;
 
-	switch (gameScene_->GetDifficultyLevel()) {
+	circleCenter_ = position;
 
+	switch (gameScene_->GetDifficultyLevel()) {
 	case DifficultyLevel::kEasy:
 		kMaxHp = 3;
 		break;
@@ -29,7 +30,29 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 	case DifficultyLevel::kHard:
 		kMaxHp = 8;
 		break;
+	default:
+		break;
 	}
+
+	switch (enemyType_) {
+	case EnemyType::kTank:
+		kMaxHp *= 3;                                 // 難易度×3
+		worldTransform_.scale_ = {2.0f, 2.0f, 2.0f}; // ← 追加
+		collisionRadius_ = 2.0f;                     // ← サイズに合わせて
+		velocity_ = {0, 0, -0.004f};                 // 低速
+		break;
+
+	case EnemyType::kZigzag:
+		kMaxHp/=2;                                      // 難易度×3
+		worldTransform_.scale_ = {1.0f, 1.0f, 1.0f}; // ← 追加
+		collisionRadius_ = 1.0f;                     // ← サイズに合わせて
+		velocity_ = {0, 0, -0.08f};                   // 低速
+		break;
+
+	default:
+		break;
+	}
+	hp_ = kMaxHp;
 
 	hp_ = kMaxHp;
 
@@ -70,17 +93,34 @@ void Enemy::UpdateApproach() {
 	worldTransform_.translation_.y += velocity_.y;
 	worldTransform_.translation_.z += velocity_.z;
 
-	if (worldTransform_.translation_.z <= 0.0f) {
-		velocity_ = {0.01f, 0.01f, 0};
-		phase_ = Phase::Leave;
+	//if (worldTransform_.translation_.z <= 0.0f) {
+	//	velocity_ = {0.01f, 0.01f, 0};
+	//	phase_ = Phase::Leave;
+	//}
+
+	if (enemyType_ != EnemyType::kTank) {
+		--kShotTimer;
+		if (kShotTimer < 0) {
+			EnemyShotUpdate();
+			kShotTimer = kFireInterval;
+		}
 	}
 
-	--kShotTimer;
+	if (enemyType_ == EnemyType::kZigzag) {
+		circleTimer_ += 0.03f; // 回転速度（大きくすると速い）
+		worldTransform_.translation_.x = circleCenter_.x + sinf(circleTimer_) * circleRadius_;
+		worldTransform_.translation_.y = circleCenter_.y + cosf(circleTimer_) * circleRadius_; // ← z を y に変更
+		//worldTransform_.rotation_.y = -circleTimer_; // 向きも合わせて回す（任意）
 
-	if (kShotTimer < 0) {
-		EnemyShotUpdate();
-		kShotTimer = kFireInterval;
+		--kShotTimer;
+		if (kShotTimer < 0) {
+			EnemyShotUpdate();
+			kShotTimer = 10;
+		}
+
 	}
+
+
 
 	if (incvincibleTimer_ > 0) {
 		incvincibleTimer_--;
@@ -110,13 +150,22 @@ void Enemy::EnemyShotUpdate() {
 		directionToPlayer.z /= length;
 	}
 
-	// 速度 = 正規化された方向 × スピード
-	Vector3 velocity = {directionToPlayer.x * kBulletSpeed, directionToPlayer.y * kBulletSpeed, directionToPlayer.z * kBulletSpeed};
+	if (enemyType_ == EnemyType::kZigzag) {
 
-	EnemyBullet* newBullet = new EnemyBullet();
-	newBullet->Initialize(bulletModel_, GetWorldPosition(), velocity);
-	gameScene_->AddEnemyBullet(newBullet);
-}
+		EnemyBullet* newBullet = new EnemyBullet();
+		newBullet->Initialize(bulletModel_, GetWorldPosition(), {0, 0, -1.0f});
+		gameScene_->AddEnemyBullet(newBullet);
+
+	} else {
+
+		// 速度 = 正規化された方向 × スピード
+		Vector3 velocity = {directionToPlayer.x * kBulletSpeed, directionToPlayer.y * kBulletSpeed, directionToPlayer.z * kBulletSpeed};
+
+		EnemyBullet* newBullet = new EnemyBullet();
+		newBullet->Initialize(bulletModel_, GetWorldPosition(), velocity);
+		gameScene_->AddEnemyBullet(newBullet);
+	}
+}      
 
 void Enemy::OnCollision() {
 
