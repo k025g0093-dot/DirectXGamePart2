@@ -50,6 +50,8 @@ public:
 private:
 	// 3Dモデルで必要なモデルの呼び出し
 	KamataEngine::Model* model_ = nullptr;
+	//objectの色変更
+	KamataEngine::ObjectColor objectColor_;
 	// カメラ
 	KamataEngine::Camera* camera_ = nullptr;
 	// 敵の移動速度

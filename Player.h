@@ -111,6 +111,8 @@ private:
 	KamataEngine::Camera* camera_ = nullptr;
 	// キー入力
 	KamataEngine::Input* input_ = nullptr;
+	//objectのカラー
+	KamataEngine::ObjectColor objectColor_;
 
 	// プレイヤーのHP
 	int32_t hp_ = 5;
@@ -119,4 +121,6 @@ private:
 	//30Fの無敵時間
 	int32_t incvincibleTimer_ = 0;
 	int32_t incvincibleTimerMax_ = 30;
+
+	float alfaColor = 1.0f;
 };

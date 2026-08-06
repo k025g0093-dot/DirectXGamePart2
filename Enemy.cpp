@@ -13,6 +13,9 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
 	worldTransform_.rotation_ = {0.0f, 6.3f, 0.0f};
+	objectColor_.Initialize();
+	objectColor_.SetColor({1.0f, 1.0f, 1.0f, 1.0f});
+
 	velocity_ = {0, 0, -0.01f};
 	camera_ = camera;
 
@@ -83,7 +86,7 @@ void Enemy::Update() {
 
 void Enemy::Draw() {
 	if (!isDead_)
-		model_->Draw(worldTransform_, *camera_);
+		model_->Draw(worldTransform_, *camera_, &objectColor_);
 }
 
 void Enemy::InitApproach() { kShotTimer = kFireInterval; }
@@ -174,6 +177,7 @@ void Enemy::OnCollision() {
 		return;
 	}
 	hp_--;
+	objectColor_.SetColor({1.0f, 1.0f, 1.0f, 1.0f});
 	if (hp_ <= 0) {
 		isDead_ = true;
 	} else {

@@ -23,6 +23,8 @@ void Player::Initialize(
 	worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
 	worldTransform_.rotation_ = {0.0f, 90.0f, 0.0f};
 	worldTransform_.translation_ = {0.0f, 0.0f, 0.0f};
+	objectColor_.Initialize();
+	objectColor_.SetColor({1.0f, 1.0f, 1.0f, alfaColor});
 
 	velocity_ = {0.0f, 0.0f, 0.0f};
 
@@ -69,6 +71,11 @@ void Player::Updata() {
 		incvincibleTimer_--;
 	}
 
+	if (incvincibleTimer_ <= 0) {
+		alfaColor += 1.0f;
+		objectColor_.SetColor({1.0f, 1.0f, 1.0f, alfaColor});
+	}
+
 	UpdateWorldTransform(worldTransform_);
 	Update3DReticlePosition();
 	Update2DReticlePosition();
@@ -78,7 +85,7 @@ void Player::Draw() {
 	for (playerBullet* bullet : bullets_) {
 		bullet->Draw(camera_);
 	}
-	model_->Draw(worldTransform_, *camera_);
+	model_->Draw(worldTransform_, *camera_, &objectColor_);
 	model3DReticle_->Draw(worldTransform3DReticle_, *camera_);
 }
 
@@ -242,13 +249,17 @@ Vector3 Player::GetWorldPosition() {
 void Player::OnCollision() {
 	// 無敵時間中はダメージを受けない
 	if (incvincibleTimer_ > 0) {
+
 		return;
 	}
 	hp_--;
+
 	if (hp_ <= 0) {
 		isDead_ = true;
 	} else {
 		incvincibleTimer_ = incvincibleTimerMax_; // 無敵開始
+		alfaColor = 0.5f;
+		objectColor_.SetColor({1.0f, 1.0f, 1.0f, alfaColor});
 	}
 }
 
