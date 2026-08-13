@@ -19,9 +19,13 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 	velocity_ = {0, 0, -0.01f};
 	camera_ = camera;
 
+	// 移動パターンの基準になる位置（スポーン地点）を覚えておく
 	circleCenter_ = position;
 
-	switch (gameScene_->GetDifficultyLevel()) {
+	// 難易度でベースのHPを決める
+	DifficultyLevel level = gameScene_ ? gameScene_->GetDifficultyLevel() : DifficultyLevel::kNormal;
+
+	switch (level) {
 	case DifficultyLevel::kEasy:
 		kMaxHp = 3;
 		break;
@@ -37,25 +41,83 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 		break;
 	}
 
+	// タイプごとのステータス設定
 	switch (enemyType_) {
 	case EnemyType::kTank:
-		kMaxHp *= 3;                                 // 難易度×3
-		worldTransform_.scale_ = {2.0f, 2.0f, 2.0f}; // ← 追加
-		collisionRadius_ = 2.0f;                     // ← サイズに合わせて
-		velocity_ = {0, 0, -0.004f};                 // 低速
+		// 硬くて大きい、弾は撃たずに体当たりで迫ってくる
+		kMaxHp *= 3;
+		worldTransform_.scale_ = {2.0f, 2.0f, 2.0f};
+		collisionRadius_ = 2.0f;
+		velocity_ = {0, 0, -0.004f}; // 低速
 		break;
 
 	case EnemyType::kZigzag:
-		kMaxHp/=2;                                      // 難易度×3
-		worldTransform_.scale_ = {1.0f, 1.0f, 1.0f}; // ← 追加
-		collisionRadius_ = 1.0f;                     // ← サイズに合わせて
-		velocity_ = {0, 0, -0.08f};                   // 低速
+		// 円を描きながら小刻みに撃ってくる
+		kMaxHp /= 2;
+		worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
+		collisionRadius_ = 1.0f;
+		velocity_ = {0, 0, -0.08f};
+		fireInterval_ = 10; // 連射
+		break;
+
+	case EnemyType::kWave:
+		// 左右に大きく波打つので狙いにくい
+		worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
+		collisionRadius_ = 1.0f;
+		velocity_ = {0, 0, -0.05f};
+		moveAmplitude_ = 6.0f; // 左右の振れ幅
+		moveSpeed_ = 0.04f;    // 波の速さ
+		fireInterval_ = 50;
+		break;
+
+	case EnemyType::kRush:
+		// 紙耐久のかわりに速い、溜めてから突っ込んでくる
+		kMaxHp = kMaxHp / 3;
+		if (kMaxHp < 1) {
+			kMaxHp = 1;
+		}
+		worldTransform_.scale_ = {0.8f, 0.8f, 0.8f};
+		collisionRadius_ = 0.8f;
+		velocity_ = {0, 0, -0.02f}; // 溜め中はゆっくり
+		rushChargeTime_ = 60;       // 溜め時間（フレーム）
+		rushSpeed_ = 0.35f;         // 突進速度
+		break;
+
+	case EnemyType::kHover:
+		// 前に出て止まり、左右に往復しながら撃ち続ける
+		worldTransform_.scale_ = {1.2f, 1.2f, 1.2f};
+		collisionRadius_ = 1.2f;
+		velocity_ = {0, 0, -0.06f};
+		advanceTime_ = 120;    // 前進する時間（フレーム）
+		moveAmplitude_ = 6.0f; // 往復の幅
+		moveSpeed_ = 0.03f;
+		fireInterval_ = 40;
+		break;
+
+	case EnemyType::kDive:
+		// 上空から急降下して、途中で水平飛行に切り替える
+		worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
+		collisionRadius_ = 1.0f;
+		velocity_ = {0, 0, -0.04f};
+		diveTargetY_ = position.y - 10.0f; // スポーン位置から10だけ降りる
+		diveSpeed_ = 0.10f;
+		fireInterval_ = 45;
+		break;
+
+	case EnemyType::kOrbit:
+		// プレイヤーの周りを回り込むので画面内を動き回る
+		kMaxHp += 2;
+		worldTransform_.scale_ = {1.1f, 1.1f, 1.1f};
+		collisionRadius_ = 1.1f;
+		velocity_ = {0, 0, -0.03f};
+		moveAmplitude_ = 7.0f; // プレイヤーからの周回半径
+		moveSpeed_ = 0.025f;
+		fireInterval_ = 70;
 		break;
 
 	default:
 		break;
 	}
-	hp_ = kMaxHp;
 
 	hp_ = kMaxHp;
 
@@ -89,41 +151,53 @@ void Enemy::Draw() {
 		model_->Draw(worldTransform_, *camera_, &objectColor_);
 }
 
-void Enemy::InitApproach() { kShotTimer = kFireInterval; }
+void Enemy::InitApproach() { kShotTimer = fireInterval_; }
 
 void Enemy::UpdateApproach() {
+
+	// 共通の前進処理
 	worldTransform_.translation_.x += velocity_.x;
 	worldTransform_.translation_.y += velocity_.y;
 	worldTransform_.translation_.z += velocity_.z;
 
-	//if (worldTransform_.translation_.z <= 0.0f) {
-	//	velocity_ = {0.01f, 0.01f, 0};
-	//	phase_ = Phase::Leave;
-	//}
+	// タイプごとの移動パターン
+	switch (enemyType_) {
+	case EnemyType::kZigzag:
+		UpdateMoveZigzag();
+		break;
 
-	if (enemyType_ != EnemyType::kTank) {
+	case EnemyType::kWave:
+		UpdateMoveWave();
+		break;
+
+	case EnemyType::kRush:
+		UpdateMoveRush();
+		break;
+
+	case EnemyType::kHover:
+		UpdateMoveHover();
+		break;
+
+	case EnemyType::kDive:
+		UpdateMoveDive();
+		break;
+
+	case EnemyType::kOrbit:
+		UpdateMoveOrbit();
+		break;
+
+	default:
+		break;
+	}
+
+	// 射撃処理（タンクと突進タイプは弾を撃たない）
+	if (enemyType_ != EnemyType::kTank && enemyType_ != EnemyType::kRush) {
 		--kShotTimer;
 		if (kShotTimer < 0) {
 			EnemyShotUpdate();
-			kShotTimer = kFireInterval;
+			kShotTimer = fireInterval_;
 		}
 	}
-
-	if (enemyType_ == EnemyType::kZigzag) {
-		circleTimer_ += 0.03f; // 回転速度（大きくすると速い）
-		worldTransform_.translation_.x = circleCenter_.x + sinf(circleTimer_) * circleRadius_;
-		worldTransform_.translation_.y = circleCenter_.y + cosf(circleTimer_) * circleRadius_; // ← z を y に変更
-		//worldTransform_.rotation_.y = -circleTimer_; // 向きも合わせて回す（任意）
-
-		--kShotTimer;
-		if (kShotTimer < 0) {
-			EnemyShotUpdate();
-			kShotTimer = 10;
-		}
-
-	}
-
-
 
 	if (incvincibleTimer_ > 0) {
 		incvincibleTimer_--;
@@ -135,9 +209,112 @@ void Enemy::UpdateLeave() {
 	worldTransform_.translation_.y += velocity_.y;
 }
 
+#pragma region タイプごとの移動パターン
+
+// 円を描きながら進む
+void Enemy::UpdateMoveZigzag() {
+
+	circleTimer_ += 0.03f; // 回転速度（大きくすると速い）
+	worldTransform_.translation_.x = circleCenter_.x + sinf(circleTimer_) * circleRadius_;
+	worldTransform_.translation_.y = circleCenter_.y + cosf(circleTimer_) * circleRadius_;
+}
+
+// 左右に大きく波打ちながら前進する
+void Enemy::UpdateMoveWave() {
+
+	moveTimer_ += moveSpeed_;
+
+	worldTransform_.translation_.x = circleCenter_.x + sinf(moveTimer_) * moveAmplitude_;
+
+	// 進行方向に合わせて機体を傾けると波打ってる感が出る
+	worldTransform_.rotation_.z = -cosf(moveTimer_) * 0.5f;
+}
+
+// 溜めのあとプレイヤーめがけて高速で突進する
+void Enemy::UpdateMoveRush() {
+
+	// 突進を始めたあとは velocity_ をそのまま使うので何もしない
+	if (isRushing_) {
+		return;
+	}
+
+	// 溜め中：小刻みに震わせて突進の予兆を出す
+	--rushChargeTime_;
+	moveTimer_ += 0.8f;
+	worldTransform_.translation_.x += sinf(moveTimer_) * 0.05f;
+
+	if (rushChargeTime_ <= 0 && player_) {
+		// この瞬間のプレイヤー方向へ velocity_ を固定して突進開始
+		Vector3 direction = Normalize(player_->GetWorldPosition() - GetWorldPosition());
+		velocity_ = direction * rushSpeed_;
+		isRushing_ = true;
+	}
+}
+
+// 手前まで進んだら停止して、左右に往復する
+void Enemy::UpdateMoveHover() {
+
+	if (advanceTime_ > 0) {
+		// 進入中：そのまま前進させる
+		--advanceTime_;
+
+		if (advanceTime_ == 0) {
+			// 停止した位置を往復の中心にする
+			circleCenter_ = worldTransform_.translation_;
+			velocity_ = {0.0f, 0.0f, -0.005f}; // ほぼ停止
+		}
+		return;
+	}
+
+	// 停止後：左右に往復する
+	moveTimer_ += moveSpeed_;
+	worldTransform_.translation_.x = circleCenter_.x + sinf(moveTimer_) * moveAmplitude_;
+}
+
+// 上空から急降下して、目標の高さで水平飛行に移る
+void Enemy::UpdateMoveDive() {
+
+	if (worldTransform_.translation_.y > diveTargetY_) {
+		// 降下中：だんだん加速させる
+		worldTransform_.translation_.y -= diveSpeed_;
+		diveSpeed_ += 0.004f;
+
+		// 機首を下に向ける
+		worldTransform_.rotation_.x = -0.6f;
+	} else {
+		// 引き起こし：高さを固定して機体を水平に戻す
+		worldTransform_.translation_.y = diveTargetY_;
+		worldTransform_.rotation_.x += (0.0f - worldTransform_.rotation_.x) * 0.1f;
+	}
+}
+
+// プレイヤーの周りを回り込むように動く
+void Enemy::UpdateMoveOrbit() {
+
+	if (!player_) {
+		return;
+	}
+
+	moveTimer_ += moveSpeed_;
+
+	// プレイヤーの位置を中心に、XY平面上を周回する
+	Vector3 playerPos = player_->GetWorldPosition();
+	float targetX = playerPos.x + cosf(moveTimer_) * moveAmplitude_;
+	float targetY = playerPos.y + sinf(moveTimer_) * moveAmplitude_;
+
+	// いきなり張り付くと不自然なので、少しずつ目標位置へ寄せる
+	worldTransform_.translation_.x += (targetX - worldTransform_.translation_.x) * 0.05f;
+	worldTransform_.translation_.y += (targetY - worldTransform_.translation_.y) * 0.05f;
+}
+
+#pragma endregion
+
 void Enemy::EnemyShotUpdate() {
 
-	// assert(player_);
+	// プレイヤーがまだセットされていないフレームでは撃たない
+	if (!player_ || !gameScene_) {
+		return;
+	}
 
 	float difficlutRate = gameScene_->GetDifficultyLevel() == DifficultyLevel::kEasy ? 0.5f : (gameScene_->GetDifficultyLevel() == DifficultyLevel::kNormal ? 1.0f : 1.5f);
 	const float kBulletSpeed = 0.5f * difficlutRate;
@@ -168,7 +345,7 @@ void Enemy::EnemyShotUpdate() {
 		newBullet->Initialize(bulletModel_, GetWorldPosition(), velocity);
 		gameScene_->AddEnemyBullet(newBullet);
 	}
-}      
+}
 
 void Enemy::OnCollision() {
 

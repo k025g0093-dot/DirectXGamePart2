@@ -5,9 +5,14 @@
 
 enum class EnemyType {
 
-	kNormal, // 既存
-	kTank,   // タンク
-	kZigzag,//ジグザグに動く敵
+	kNormal, // 既存：まっすぐ前進しながら自機狙い弾を撃つ
+	kTank,   // タンク：大きくて硬い、弾は撃たない
+	kZigzag, // 円を描きながら進む
+	kWave,   // 左右に大きく波打ちながら前進する
+	kRush,   // 溜めのあとプレイヤーめがけて高速で突進する
+	kHover,  // 手前まで進んだら停止して、左右に往復しながら撃ち続ける
+	kDive,   // 上空から急降下して、途中で水平飛行に切り替える
+	kOrbit,  // プレイヤーの周りを回り込むように動く
 };
 
 enum class Phase {
@@ -50,7 +55,7 @@ public:
 private:
 	// 3Dモデルで必要なモデルの呼び出し
 	KamataEngine::Model* model_ = nullptr;
-	//objectの色変更
+	// objectの色変更
 	KamataEngine::ObjectColor objectColor_;
 	// カメラ
 	KamataEngine::Camera* camera_ = nullptr;
@@ -67,22 +72,49 @@ private:
 	int32_t incvincibleTimer_ = 0;
 	int32_t incvincibleTimerMax_ = 15;
 
-	float circleTimer_ = 0.0f;  // 円運動の進行角（フレームごとに加算）
-	float circleRadius_ = 3.0f; // 円の半径
+	float circleTimer_ = 0.0f;                // 円運動の進行角（フレームごとに加算）
+	float circleRadius_ = 3.0f;               // 円の半径
 	KamataEngine::Vector3 circleCenter_ = {}; // 円の中心（スポーン位置）
 
 	GameScene* gameScene_ = nullptr;
 
+private: // 追加した移動パターンで使うパラメータ
+	// 波状移動・往復移動などで共通して使う進行角
+	float moveTimer_ = 0.0f;
+	// 左右の振れ幅（周回タイプでは半径として使う）
+	float moveAmplitude_ = 3.0f;
+	// 移動パターンの進行速度（大きいほど速く揺れる）
+	float moveSpeed_ = 0.05f;
+
+	// kRush：突進までの溜め時間と突進速度
+	int32_t rushChargeTime_ = 60;
+	float rushSpeed_ = 0.35f;
+	bool isRushing_ = false;
+
+	// kHover：停止するまで前進し続けるフレーム数
+	int32_t advanceTime_ = 120;
+
+	// kDive：降下を止める高さと降下速度
+	float diveTargetY_ = 0.0f;
+	float diveSpeed_ = 0.10f;
+
 private:
 	Phase phase_ = Phase::Approach;
 
+	// 射撃間隔の初期値（タイプごとに fireInterval_ で上書きする）
 	static const int kFireInterval = 60;
+	int32_t fireInterval_ = kFireInterval;
 	int32_t kShotTimer = 0;
 
 	void UpdateApproach();
 	void UpdateLeave();
 	void EnemyShotUpdate();
 
-
-
+	// タイプごとの移動パターン
+	void UpdateMoveZigzag();
+	void UpdateMoveWave();
+	void UpdateMoveRush();
+	void UpdateMoveHover();
+	void UpdateMoveDive();
+	void UpdateMoveOrbit();
 };

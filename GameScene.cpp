@@ -55,13 +55,8 @@ void GameScene::Initialize() {
 	player_->Get3DReticleModel(model3DReticle_);
 	player_->SetLockOn(lockOn_);
 
-	Vector3 enemyPosition = {0, 0, 10};
-
-	Enemy* newEnemy = new Enemy();
-	newEnemy->SetGameScene(this);  
-	newEnemy->Initialize(enemyModel_, &railCameraController_->GetCamera(), {5, 0, 10});
-	newEnemy->GetEnemyBulletModel(enemyBulletModel_);
-	enemies_.push_back(newEnemy);
+	// 最初の1体も SpawnEnemy 経由で出すことで、参照のセット漏れをなくす
+	SpawnEnemy(EnemyType::kNormal, {5, 0, 10});
 
 #pragma endregion
 
@@ -101,12 +96,11 @@ void GameScene::Update() {
 		if (player_->IsDead()) {
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
 			gamePhase_ = GamePhase::kFadeOut;
-		} //else if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-		//	// クリア（追加）
-		//	isGameClear_ = true;
-		//	fade_->Start(Fade::Status::FadeOut, 1.0f);
-		//	gamePhase_ = GamePhase::kFadeOut;
-		//}
+		} else if (isGoalReached_ && enemies_.empty()) {
+			isGameClear_ = true;
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			gamePhase_ = GamePhase::kFadeOut;
+		}
 
 		break;
 
@@ -144,10 +138,10 @@ void GameScene::GameUpdate() {
 	lockOn_->Update(player_, enemies_, railCameraController_->GetCamera());
 
 	player_->Updata();
+
+	// Player と GameScene の参照は SpawnEnemy 側で渡しているのでここでは更新処理だけ
 	for (Enemy* enemy : enemies_) {
 		enemy->Update();
-		enemy->SetPlayer(player_);
-		enemy->SetGameScene(this);
 	}
 
 	enemies_.remove_if([](Enemy* enemy) {
@@ -246,6 +240,24 @@ void GameScene::CheckAllCollisions() {
 			player_->OnCollision();
 			// 敵弾の衝突判定のコールバック
 			bullet->OnCollision();
+		}
+	}
+
+	// プレイヤーと敵本体の当たり判定（突進タイプの体当たり用）
+	posA = player_->GetWorldPosition();
+	for (Enemy* enemy : enemies_) {
+		posB = enemy->GetWorldPosition();
+
+		Vector3 diff = posA - posB;
+
+		// 距離を計算
+		float distance = sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+		float playerRadius = 1.0f;
+		float enemyRadius = enemy->GetCollisionRadius();
+
+		if (distance < playerRadius + enemyRadius) {
+			player_->OnCollision();
+			enemy->OnCollision();
 		}
 	}
 
@@ -351,7 +363,7 @@ void GameScene::UpdateEnemyPopCommands() {
 			std::getline(line_stream, word, (','));
 			float z = (float)std::atof(word.c_str());
 
-			SpawnEnemy(type,{x, y, z});
+			SpawnEnemy(type, {x, y, z});
 		} else if (word.find("WAIT") == 0) {
 			// 待機処理を追加する場合はここに記述
 			std::getline(line_stream, word, (','));
@@ -363,14 +375,23 @@ void GameScene::UpdateEnemyPopCommands() {
 			popEnemyWaitTime_ = waitTime;
 
 			break;
+		} else if (word.find("GOAL") == 0) {
+			// ゴール到達
+			isGoalReached_ = true;
+
+			break;
 		}
 	}
 }
 
-void GameScene::SpawnEnemy(EnemyType type,const KamataEngine::Vector3& position) {
+void GameScene::SpawnEnemy(EnemyType type, const KamataEngine::Vector3& position) {
 	Enemy* enemy = new Enemy();
-	enemy->SetGameScene(this);  
-	enemy->SetEnemyType(type); 
+
+	// Initialize の中で難易度やプレイヤー位置を参照するので、必ず先に渡しておく
+	enemy->SetGameScene(this);
+	enemy->SetPlayer(player_);
+	enemy->SetEnemyType(type);
+
 	enemy->Initialize(enemyModel_, &railCameraController_->GetCamera(), position);
 	enemy->GetEnemyBulletModel(enemyBulletModel_);
 	enemies_.push_back(enemy);

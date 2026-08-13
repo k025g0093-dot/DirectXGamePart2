@@ -90,6 +90,9 @@
     <ClCompile Include="GameOverScene.cpp">
       <Filter>ソース ファイル\タイトルシーンとかのもの\リザルトとか</Filter>
     </ClCompile>
+    <ClCompile Include="Ally.cpp">
+      <Filter>ソース ファイル\敵</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\SpritePS.hlsl">
@@ -191,6 +194,9 @@
     </ClInclude>
     <ClInclude Include="GameOverScene.h">
       <Filter>ソース ファイル\タイトルシーンとかのもの\リザルトとか</Filter>
+    </ClInclude>
+    <ClInclude Include="Ally.h">
+      <Filter>ソース ファイル\敵</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

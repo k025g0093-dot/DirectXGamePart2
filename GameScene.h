@@ -81,6 +81,7 @@ public:
 	Fade* fade_ = nullptr;
 
 	bool isGameClear_ = false; // ゲームクリアフラグ
+	bool isGoalReached_ = false; // ゴール到達フラグ
 
 private:
 	// playerなどのポインタ
