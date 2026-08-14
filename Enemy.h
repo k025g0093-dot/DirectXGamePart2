@@ -51,6 +51,8 @@ public:
 
 	float collisionRadius_ = 1.0f;
 	float GetCollisionRadius() const { return collisionRadius_; }
+	bool isWeakened_ = false;
+	bool IsWeakened() const { return isWeakened_; }
 
 private:
 	// 3Dモデルで必要なモデルの呼び出し
@@ -105,6 +107,8 @@ private:
 	static const int kFireInterval = 60;
 	int32_t fireInterval_ = kFireInterval;
 	int32_t kShotTimer = 0;
+	static const int32_t kWeakenHp = 2;
+
 
 	void UpdateApproach();
 	void UpdateLeave();

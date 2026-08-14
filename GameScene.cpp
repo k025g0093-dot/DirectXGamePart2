@@ -144,6 +144,12 @@ void GameScene::GameUpdate() {
 		enemy->Update();
 	}
 
+	// 仲間の更新（ターゲットはロックオン対象。敵の削除前なので参照が安全）
+	for (Ally* ally : allies_) {
+		ally->SetTarget(lockOn_->GetTarget());
+		ally->Updata();
+	}
+
 	enemies_.remove_if([](Enemy* enemy) {
 		if (enemy->IsDead()) {
 			delete enemy;
@@ -161,6 +167,18 @@ void GameScene::GameUpdate() {
 	});
 
 	for (EnemyBullet* bullet : bullets_) {
+		bullet->Update();
+	}
+
+	allyBullets_.remove_if([](playerBullet* bullet) {
+		if (bullet->IsDead()) {
+			delete bullet;
+			return true;
+		}
+		return false;
+	});
+
+	for (playerBullet* bullet : allyBullets_) {
 		bullet->Update();
 	}
 
@@ -184,6 +202,12 @@ void GameScene::Draw() {
 	for (Enemy* enemy : enemies_) {
 		enemy->Draw();
 	}
+	for (Ally* ally : allies_) {
+		ally->Draw();
+	}
+	for (playerBullet* bullet : allyBullets_) {
+		bullet->Draw(&activeCamera);
+	}
 	Model::PostDraw();
 
 	// UIの描画
@@ -201,6 +225,12 @@ GameScene::~GameScene() {
 	delete player_;
 	for (Enemy* enemy : enemies_) {
 		delete enemy;
+	}
+	for (Ally* ally : allies_) {
+		delete ally;
+	}
+	for (playerBullet* bullet : allyBullets_) {
+		delete bullet;
 	}
 	delete skyDome_;
 	delete plane_;
@@ -275,9 +305,35 @@ void GameScene::CheckAllCollisions() {
 			float bulletRadius = 0.5f;
 
 			if (distance < EnemyRadius + bulletRadius) {
-				// 地キャラの衝突判定
-				enemy->OnCollision();
+				// 弱体化した敵をロックオン中に撃つと仲間化する
+				if (enemy->IsWeakened() && enemy == lockOn_->GetTarget() && allies_.size() < (size_t)kMaxAllyCount) {
+					SpawnAlly(enemy->GetWorldPosition());
+					enemy->isDead_ = true;
+				} else {
+					// 地キャラの衝突判定
+					enemy->OnCollision();
+				}
 				// 敵弾の衝突判定のコールバック
+				bullet->OnCollision();
+			}
+		}
+	}
+
+	// 仲間の弾 vs 敵（仲間の弾では仲間化はしない。通常ダメージのみ）
+	for (Enemy* enemy : enemies_) {
+		posA = enemy->GetWorldPosition();
+		for (playerBullet* bullet : allyBullets_) {
+			posB = bullet->GetWorldPosition();
+
+			Vector3 diff = posA - posB;
+
+			// 距離を計算
+			float distance = sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+			float EnemyRadius = enemy->GetCollisionRadius();
+			float bulletRadius = 0.5f;
+
+			if (distance < EnemyRadius + bulletRadius) {
+				enemy->OnCollision();
 				bullet->OnCollision();
 			}
 		}
@@ -396,3 +452,15 @@ void GameScene::SpawnEnemy(EnemyType type, const KamataEngine::Vector3& position
 	enemy->GetEnemyBulletModel(enemyBulletModel_);
 	enemies_.push_back(enemy);
 }
+
+void GameScene::SpawnAlly(const KamataEngine::Vector3& position) {
+	Ally* ally = new Ally();
+
+	ally->Initialize(enemyModel_, &railCameraController_->GetCamera(), position, (int32_t)allies_.size());
+	ally->SetPlayer(player_);
+	ally->SetGameScene(this);
+	ally->SetBulletModel(playerModel_);
+	allies_.push_back(ally);
+}
+
+void GameScene::AddAllyBullet(playerBullet* bullet) { allyBullets_.push_back(bullet); }

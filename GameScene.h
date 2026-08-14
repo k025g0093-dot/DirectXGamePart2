@@ -3,6 +3,7 @@
 #include "Plane.h"
 
 #include "Enemy.h"
+#include "Ally.h"
 #include "LockOn.h"
 #include "Player.h"
 #include "RailCameraController.h"
@@ -72,6 +73,11 @@ public:
 
 	// この先に小分けにしていく関数などを書く
 
+	void SpawnAlly(const KamataEngine::Vector3& position);
+	void AddAllyBullet(playerBullet* bullet);
+	static const int kMaxAllyCount = 10;
+
+
 	// 終了フラグ
 	bool finished_ = false;
 	// 終了フラグ
@@ -89,6 +95,9 @@ private:
 	Enemy* enemy_ = nullptr;
 	LockOn* lockOn_ = nullptr;
 	std::list<Enemy*> enemies_;
+
+	std::list<Ally*> allies_;
+	std::list<playerBullet*> allyBullets_;
 
 	SkyDome* skyDome_ = nullptr;
 	Plane* plane_ = nullptr;

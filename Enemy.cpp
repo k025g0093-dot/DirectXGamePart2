@@ -191,7 +191,7 @@ void Enemy::UpdateApproach() {
 	}
 
 	// 射撃処理（タンクと突進タイプは弾を撃たない）
-	if (enemyType_ != EnemyType::kTank && enemyType_ != EnemyType::kRush) {
+	if (enemyType_ != EnemyType::kTank && enemyType_ != EnemyType::kRush&&!isWeakened_) {
 		--kShotTimer;
 		if (kShotTimer < 0) {
 			EnemyShotUpdate();
@@ -359,6 +359,12 @@ void Enemy::OnCollision() {
 		isDead_ = true;
 	} else {
 		incvincibleTimer_ = incvincibleTimerMax_; // 無敵開始
+
+		if (enemyType_ != EnemyType::kTank && hp_ <= kWeakenHp) {
+			isWeakened_ = true;
+			objectColor_.SetColor({1.0f, 0.85f, 0.2f, 1.0f});
+		}
+
 	}
 };
 
