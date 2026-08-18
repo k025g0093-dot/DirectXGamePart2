@@ -39,9 +39,8 @@ void SelectLevel::Update() {
 		}
 		break;
 
-		// ゲーム開始時に度の難易度に選択する
-	case GamePhase::kPlay:
-		// 1 でイージー、2 でノーマルを選択
+	case GamePhase::kPlay: {
+		// キーボード: 1=Easy, 2=Normal, 3=Hard
 		if (Input::GetInstance()->TriggerKey(DIK_1)) {
 			selectedDifficulty_ = DifficultyLevel::kEasy;
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
@@ -50,8 +49,31 @@ void SelectLevel::Update() {
 			selectedDifficulty_ = DifficultyLevel::kNormal;
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
 			gamePhase_ = GamePhase::kFadeOut;
+		} else if (Input::GetInstance()->TriggerKey(DIK_3)) {
+			selectedDifficulty_ = DifficultyLevel::kHard;
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			gamePhase_ = GamePhase::kFadeOut;
+		}
+
+		// コントローラー: D-pad 左=Easy, 上=Normal, 右=Hard
+		XINPUT_STATE joyState{};
+		if (Input::GetInstance()->GetJoystickState(0, joyState)) {
+			if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) {
+				selectedDifficulty_ = DifficultyLevel::kEasy;
+				fade_->Start(Fade::Status::FadeOut, 1.0f);
+				gamePhase_ = GamePhase::kFadeOut;
+			} else if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) {
+				selectedDifficulty_ = DifficultyLevel::kNormal;
+				fade_->Start(Fade::Status::FadeOut, 1.0f);
+				gamePhase_ = GamePhase::kFadeOut;
+			} else if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) {
+				selectedDifficulty_ = DifficultyLevel::kHard;
+				fade_->Start(Fade::Status::FadeOut, 1.0f);
+				gamePhase_ = GamePhase::kFadeOut;
+			}
 		}
 		break;
+	}
 
 	case GamePhase::kFadeOut:
 		// フェードアウト中：フェードが完全に終わったら、ようやく終了フラグを立てる

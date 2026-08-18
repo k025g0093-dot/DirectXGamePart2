@@ -40,13 +40,22 @@ void TitleScene::Update() {
 		}
 		break;
 
-	case GamePhase::kPlay:
-		// メイン待機中：スペースが押されたらフェードアウト開始
-		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+	case GamePhase::kPlay: {
+		bool start = Input::GetInstance()->TriggerKey(DIK_SPACE);
+
+		XINPUT_STATE joyState{};
+		if (Input::GetInstance()->GetJoystickState(0, joyState)) {
+			if (joyState.Gamepad.wButtons & (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_START)) {
+				start = true;
+			}
+		}
+
+		if (start) {
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
-			gamePhase_ = GamePhase::kFadeOut; // 次の状態へ
+			gamePhase_ = GamePhase::kFadeOut;
 		}
 		break;
+	}
 
 	case GamePhase::kFadeOut:
 		// フェードアウト中：フェードが完全に終わったら、ようやく終了フラグを立てる
