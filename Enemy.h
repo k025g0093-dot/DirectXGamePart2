@@ -13,6 +13,7 @@ enum class EnemyType {
 	kHover,  // 手前まで進んだら停止して、左右に往復しながら撃ち続ける
 	kDive,   // 上空から急降下して、途中で水平飛行に切り替える
 	kOrbit,  // プレイヤーの周りを回り込むように動く
+	kBoss,   // ボス：左右に大きく移動しながら多方向弾を撃ち続ける
 };
 
 enum class Phase {
@@ -100,6 +101,10 @@ private: // 追加した移動パターンで使うパラメータ
 	float diveTargetY_ = 0.0f;
 	float diveSpeed_ = 0.10f;
 
+	// kBoss：多方向弾の角度オフセット
+	float bossSpreadAngle_ = 0.0f;
+	int32_t bossPhase_ = 0; // HP残量に応じたフェーズ
+
 private:
 	Phase phase_ = Phase::Approach;
 
@@ -121,4 +126,5 @@ private:
 	void UpdateMoveHover();
 	void UpdateMoveDive();
 	void UpdateMoveOrbit();
+	void UpdateMoveBoss();
 };

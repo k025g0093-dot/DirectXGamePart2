@@ -115,6 +115,17 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 		fireInterval_ = 70;
 		break;
 
+	case EnemyType::kBoss:
+		// ボス：大きくて硬い、左右に移動しながら多方向弾を撃つ
+		kMaxHp *= 10;
+		worldTransform_.scale_ = {3.0f, 3.0f, 3.0f};
+		collisionRadius_ = 3.0f;
+		velocity_ = {0, 0, 0.016f}; // プレイヤーと同じ方向（+Z）に前進
+		moveAmplitude_ = 10.0f;
+		moveSpeed_ = 0.015f;
+		fireInterval_ = 30;
+		break;
+
 	default:
 		break;
 	}
@@ -184,6 +195,10 @@ void Enemy::UpdateApproach() {
 
 	case EnemyType::kOrbit:
 		UpdateMoveOrbit();
+		break;
+
+	case EnemyType::kBoss:
+		UpdateMoveBoss();
 		break;
 
 	default:
@@ -307,6 +322,30 @@ void Enemy::UpdateMoveOrbit() {
 	worldTransform_.translation_.y += (targetY - worldTransform_.translation_.y) * 0.05f;
 }
 
+// ボス：左右に大きく移動しながら弾を撃つ
+void Enemy::UpdateMoveBoss() {
+
+	moveTimer_ += moveSpeed_;
+
+	// 左右に大きく往復
+	worldTransform_.translation_.x = circleCenter_.x + sinf(moveTimer_) * moveAmplitude_;
+
+	// HP残量に応じてフェーズ変化
+	if (kMaxHp > 0) {
+		float hpRatio = (float)hp_ / (float)kMaxHp;
+		if (hpRatio > 0.5f) {
+			bossPhase_ = 0; // 通常フェーズ
+		} else if (hpRatio > 0.2f) {
+			bossPhase_ = 1; // 高速移動
+			moveSpeed_ = 0.03f;
+		} else {
+			bossPhase_ = 2; // 狂暴化
+			moveSpeed_ = 0.05f;
+			worldTransform_.rotation_.z = sinf(moveTimer_ * 2.0f) * 0.3f;
+		}
+	}
+}
+
 #pragma endregion
 
 void Enemy::EnemyShotUpdate() {
@@ -336,6 +375,32 @@ void Enemy::EnemyShotUpdate() {
 		newBullet->Initialize(bulletModel_, GetWorldPosition(), {0, 0, -1.0f});
 		gameScene_->AddEnemyBullet(newBullet);
 
+	} else if (enemyType_ == EnemyType::kBoss) {
+
+		// ボス：扇形に弾を撃つ
+		int32_t bulletCount = 3 + bossPhase_ * 2; // フェーズが上がるほど弾数増加
+		float totalAngle = 0.8f + bossPhase_ * 0.3f; // 扇の広がりも増加
+		float startAngle = -totalAngle / 2.0f;
+
+		for (int32_t i = 0; i < bulletCount; i++) {
+			float ratio = (bulletCount > 1) ? (float)i / (float)(bulletCount - 1) : 0.5f;
+			float angle = startAngle + totalAngle * ratio;
+
+			// プレイヤー方向を基準に角度を回転
+			float baseAngle = atan2f(directionToPlayer.x, directionToPlayer.z);
+			float finalAngle = baseAngle + angle;
+
+			Vector3 velocity = {
+			    sinf(finalAngle) * kBulletSpeed,
+			    0.0f,
+			    cosf(finalAngle) * kBulletSpeed
+			};
+
+			EnemyBullet* newBullet = new EnemyBullet();
+			newBullet->Initialize(bulletModel_, GetWorldPosition(), velocity);
+			gameScene_->AddEnemyBullet(newBullet);
+		}
+
 	} else {
 
 		// 速度 = 正規化された方向 × スピード
@@ -360,7 +425,7 @@ void Enemy::OnCollision() {
 	} else {
 		incvincibleTimer_ = incvincibleTimerMax_; // 無敵開始
 
-		if (enemyType_ != EnemyType::kTank && hp_ <= kWeakenHp) {
+		if (enemyType_ != EnemyType::kTank && enemyType_ != EnemyType::kBoss && hp_ <= kWeakenHp) {
 			isWeakened_ = true;
 			objectColor_.SetColor({1.0f, 0.85f, 0.2f, 1.0f});
 		}

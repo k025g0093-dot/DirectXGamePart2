@@ -456,7 +456,7 @@ void GameScene::SpawnEnemy(EnemyType type, const KamataEngine::Vector3& position
 void GameScene::SpawnAlly(const KamataEngine::Vector3& position) {
 	Ally* ally = new Ally();
 
-	ally->Initialize(enemyModel_, &railCameraController_->GetCamera(), position, (int32_t)allies_.size());
+	ally->Initialize(playerModel_, &railCameraController_->GetCamera(), position, (int32_t)allies_.size());
 	ally->SetPlayer(player_);
 	ally->SetGameScene(this);
 	ally->SetBulletModel(playerModel_);

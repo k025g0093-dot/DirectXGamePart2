@@ -31,7 +31,7 @@ void Ally::Initialize(
 	int32_t row = slotIndex / 5;
 	int32_t col = slotIndex % 5;
 
-	slotOffset_ = {(col - 2) * 2.0f, 0.5f + row * 1.5f, -(4.0f + row * 3.0f)};
+	slotOffset_ = {(col - 2) * 2.0f, 0.5f + row * 1.5f, (4.0f + row * 3.0f)};
 
 	// ゆらぎの位相を機体ごとにずらして、全員が同じ揺れ方にならないようにする
 	swayTimer_ = (float)(slotIndex % 7) * 0.5f;
