@@ -10,6 +10,7 @@
 #include "SkyDome.h"
 
 #include "Fade.h"
+#include "DeathParticle.h"
 
 
 #include <sstream>
@@ -89,6 +90,12 @@ public:
 	bool isGameClear_ = false; // ゲームクリアフラグ
 	bool isGoalReached_ = false; // ゴール到達フラグ
 
+	// ポーズ
+	bool isPaused_ = false;
+	bool prevStartButton_ = false;
+	KamataEngine::Sprite* pauseOverlay_ = nullptr;
+	uint32_t pauseTextureHandle_ = 0;
+
 private:
 	// playerなどのポインタ
 	Player* player_ = nullptr;
@@ -98,6 +105,7 @@ private:
 
 	std::list<Ally*> allies_;
 	std::list<playerBullet*> allyBullets_;
+	std::list<DeathParticle*> deathParticles_;
 
 	SkyDome* skyDome_ = nullptr;
 	Plane* plane_ = nullptr;

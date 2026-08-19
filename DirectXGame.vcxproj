@@ -164,6 +164,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Ally.cpp" />
+    <ClCompile Include="DeathParticle.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="EnemyBullet.cpp" />
     <ClCompile Include="Fade.cpp" />
@@ -281,6 +282,7 @@
   <ItemGroup>
     <ClInclude Include="Ally.h" />
     <ClInclude Include="AxisIndicator.h" />
+    <ClInclude Include="DeathParticle.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="EnemyBullet.h" />
     <ClInclude Include="Fade.h" />

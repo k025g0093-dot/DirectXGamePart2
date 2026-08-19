@@ -355,6 +355,10 @@ void Enemy::EnemyShotUpdate() {
 		return;
 	}
 
+	if (player_->GetWorldPosition().z > worldTransform_.translation_.z)
+		return;
+
+
 	float difficlutRate = gameScene_->GetDifficultyLevel() == DifficultyLevel::kEasy ? 0.5f : (gameScene_->GetDifficultyLevel() == DifficultyLevel::kNormal ? 1.0f : 1.5f);
 	const float kBulletSpeed = 0.5f * difficlutRate;
 

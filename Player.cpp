@@ -137,7 +137,7 @@ void Player::MovePlayer() {
 	}
 
 	// ゲームパッドの状態取得
-	XINPUT_STATE joyState;
+	XINPUT_STATE joyState{};
 	if (Input::GetInstance()->GetJoystickState(0, joyState)) {
 		move.x += (float)joyState.Gamepad.sThumbLX / SHRT_MAX * kCharacteaSpeed;
 		move.y += (float)joyState.Gamepad.sThumbLY / SHRT_MAX * kCharacteaSpeed;
@@ -157,7 +157,7 @@ void Player::Rotate() {
 	}
 
 	// ゲームパッドの状態取得
-	XINPUT_STATE joyState;
+	XINPUT_STATE joyState{};
 	if (Input::GetInstance()->GetJoystickState(0, joyState)) {
 		worldTransform_.rotation_.x += (float)joyState.Gamepad.sThumbRY / SHRT_MAX * kRotSpeed;
 		worldTransform_.rotation_.y -= (float)joyState.Gamepad.sThumbRX / SHRT_MAX * kRotSpeed;
@@ -198,7 +198,7 @@ void Player::Attack() {
 	}
 
 	// ゲームパッドの状態取得
-	XINPUT_STATE joyState;
+	XINPUT_STATE joyState{};
 	// 何も接続されてないなら抜ける
 	if (!Input::GetInstance()->GetJoystickState(0, joyState)) {
 		return;

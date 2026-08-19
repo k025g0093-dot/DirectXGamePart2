@@ -74,6 +74,12 @@ void GameScene::Initialize() {
 	AxisIndicator::GetInstance()->SetVisible(true);
 	AxisIndicator::GetInstance()->SetTargetCamera(&debugCamera_->GetCamera());
 
+	// ポーズ画面用オーバーレイ
+	pauseTextureHandle_ = TextureManager::Load("white1x1.png");
+	pauseOverlay_ = Sprite::Create(pauseTextureHandle_, {0, 0});
+	pauseOverlay_->SetSize(Vector2(1280, 720));
+	pauseOverlay_->SetColor(Vector4(0, 0, 0, 0.6f));
+
 	LoadEnemyPopData();
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 }
@@ -81,6 +87,10 @@ void GameScene::Initialize() {
 void GameScene::Update() {
 
 	fade_->Update();
+	XINPUT_STATE joyState{};
+	bool pauseTrigger = false;
+	bool currentStart = false;
+
 	switch (gamePhase_) {
 	case GamePhase::kFadeIn:
 		if (!fade_->IsFinished()) {
@@ -88,10 +98,29 @@ void GameScene::Update() {
 		}
 		break;
 
-	case GamePhase::kPlay:
+	case GamePhase::kPlay: {
 
-		// ゲーム中の処理
-		GameUpdate();
+		// ポーズ切り替え（ESC or スタートボタンの押した瞬間だけ反応）
+		pauseTrigger = input_->TriggerKey(DIK_ESCAPE);
+
+		if (input_->GetJoystickState(0, joyState)) {
+			currentStart = (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_START) != 0;
+			if (currentStart && !prevStartButton_) {
+				pauseTrigger = true;
+			}
+			prevStartButton_ = currentStart;
+		} else {
+			prevStartButton_ = false;
+		}
+
+		if (pauseTrigger) {
+			isPaused_ = !isPaused_;
+		}
+
+		// ポーズ中はゲーム更新を止める
+		if (!isPaused_) {
+			GameUpdate();
+		}
 
 		if (player_->IsDead()) {
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
@@ -112,6 +141,7 @@ void GameScene::Update() {
 		break;
 	default:
 		break;
+	}
 	}
 }
 
@@ -150,8 +180,12 @@ void GameScene::GameUpdate() {
 		ally->Updata();
 	}
 
-	enemies_.remove_if([](Enemy* enemy) {
+	enemies_.remove_if([this](Enemy* enemy) {
 		if (enemy->IsDead()) {
+			// デスパーティクルを生成
+			DeathParticle* p = new DeathParticle();
+			p->Initialize(model3DReticle_, &railCameraController_->GetCamera(), enemy->GetWorldPosition());
+			deathParticles_.push_back(p);
 			delete enemy;
 			return true;
 		}
@@ -182,6 +216,18 @@ void GameScene::GameUpdate() {
 		bullet->Update();
 	}
 
+	// デスパーティクル更新
+	for (DeathParticle* p : deathParticles_) {
+		p->Update();
+	}
+	deathParticles_.remove_if([](DeathParticle* p) {
+		if (p->IsDead()) {
+			delete p;
+			return true;
+		}
+		return false;
+	});
+
 	UpdateEnemyPopCommands();
 	CheckAllCollisions();
 }
@@ -208,6 +254,9 @@ void GameScene::Draw() {
 	for (playerBullet* bullet : allyBullets_) {
 		bullet->Draw(&activeCamera);
 	}
+	for (DeathParticle* p : deathParticles_) {
+		p->Draw();
+	}
 	Model::PostDraw();
 
 	// UIの描画
@@ -215,6 +264,11 @@ void GameScene::Draw() {
 
 	// player_->DrawUI();
 	lockOn_->Draw();
+
+	// ポーズ中は暗転オーバーレイを描画
+	if (isPaused_) {
+		pauseOverlay_->Draw();
+	}
 
 	Sprite::PostDraw();
 }
@@ -232,6 +286,9 @@ GameScene::~GameScene() {
 	for (playerBullet* bullet : allyBullets_) {
 		delete bullet;
 	}
+	for (DeathParticle* p : deathParticles_) {
+		delete p;
+	}
 	delete skyDome_;
 	delete plane_;
 	// モデルのデリート
@@ -241,6 +298,7 @@ GameScene::~GameScene() {
 	delete skyDomeModel_;
 	delete planeModel_;
 	delete debugCamera_;
+	delete pauseOverlay_;
 }
 
 void GameScene::CheckAllCollisions() {

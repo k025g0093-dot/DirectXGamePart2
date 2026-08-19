@@ -93,6 +93,9 @@
     <ClCompile Include="Ally.cpp">
       <Filter>ソース ファイル\敵</Filter>
     </ClCompile>
+    <ClCompile Include="DeathParticle.cpp">
+      <Filter>ソース ファイル\敵</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\SpritePS.hlsl">
@@ -196,6 +199,9 @@
       <Filter>ソース ファイル\タイトルシーンとかのもの\リザルトとか</Filter>
     </ClInclude>
     <ClInclude Include="Ally.h">
+      <Filter>ソース ファイル\敵</Filter>
+    </ClInclude>
+    <ClInclude Include="DeathParticle.h">
       <Filter>ソース ファイル\敵</Filter>
     </ClInclude>
   </ItemGroup>
