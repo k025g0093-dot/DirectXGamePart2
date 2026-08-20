@@ -10,38 +10,39 @@ public:
 	enum class GamePhase { kFadeIn, kPlay, kFadeOut };
 
 	GamePhase gamePhase_ = GamePhase::kFadeIn;
-	// 初期化関数
 	void Initialize();
-	// 更新処理
 	void Update();
-
 	void Draw();
 
 	~SelectLevel();
 
 	bool finished_ = false;
-
 	bool IsFinished() const { return finished_; }
 
 	Fade* fade_ = nullptr;
 
 public:
-	//レベルの選択関係
 	DifficultyLevel GetSelectedDifficulty() const { return selectedDifficulty_; }
 
 private:
 	DifficultyLevel selectedDifficulty_ = DifficultyLevel::kNormal;
-		
 
-private:
-	// ワールドトランスフォーム
-	KamataEngine::WorldTransform worldTransform_;
-	// ビュープロジェクション（カメラ）
-	KamataEngine::Camera camera_;
+	// 難易度選択用スプライト
+	uint32_t sampleTexture_ = 0;
+	uint32_t whiteTexture_ = 0;
 
-	// タイトル用のモデルなどが必要な場合はここに追加
-	KamataEngine::Model* modelTitle_ = nullptr;
+	// 各難易度ボタン
+	KamataEngine::Sprite* btnEasy_ = nullptr;
+	KamataEngine::Sprite* btnNormal_ = nullptr;
+	KamataEngine::Sprite* btnHard_ = nullptr;
 
-	// ★これを追加
-	KamataEngine::ObjectColor objectColor_;
+	// 選択カーソル
+	KamataEngine::Sprite* cursor_ = nullptr;
+	int32_t selectIndex_ = 1; // 0=Easy, 1=Normal, 2=Hard
+	bool prevDpadLeft_ = false;
+	bool prevDpadRight_ = false;
+	bool prevConfirm_ = false;
+
+	// タイトルテクスチャ
+	KamataEngine::Sprite* titleSprite_ = nullptr;
 };

@@ -10,21 +10,38 @@ void SelectLevel::Initialize() {
 	fade_->Initialize();
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 
-	modelTitle_ = Model::CreateFromOBJ("titleFont", true);
-	assert(modelTitle_);
+	whiteTexture_ = TextureManager::Load("white1x1.png");
+	sampleTexture_ = TextureManager::Load("sample.png");
 
-	worldTransform_.Initialize();
-	camera_.Initialize();
-	objectColor_.Initialize();
+	// タイトル（sample.pngを仮で使用）
+	titleSprite_ = Sprite::Create(sampleTexture_, {0, 0});
+	titleSprite_->SetSize(Vector2(400, 100));
+	titleSprite_->SetPosition(Vector2(440, 80));
 
-	// 1. キャラを正面に向ける設定
-	worldTransform_.scale_ = {0.8f, 0.8f, 0.8f};    // 少し大きく設定
-	worldTransform_.rotation_ = {0.0f, 0.0f, 0.0f}; // 向きが逆なら 3.1415f (180度) に
-	worldTransform_.translation_ = {0.0f, 0.0f, 0.0f};
+	// 難易度ボタン（3つ並べる）
+	float baseX = 340.0f;
+	float baseY = 300.0f;
+	float spacing = 200.0f;
 
-	// 2. カメラの初期位置（キャラの正面に配置）
-	// zをマイナスにすると手前になります
-	camera_.translation_ = {0.0f, 0.5f, -15.0f};
+	btnEasy_ = Sprite::Create(whiteTexture_, {0, 0});
+	btnEasy_->SetSize(Vector2(160, 60));
+	btnEasy_->SetPosition(Vector2(baseX, baseY));
+	btnEasy_->SetColor(Vector4(0.3f, 0.7f, 0.3f, 1.0f)); // 緑
+
+	btnNormal_ = Sprite::Create(whiteTexture_, {0, 0});
+	btnNormal_->SetSize(Vector2(160, 60));
+	btnNormal_->SetPosition(Vector2(baseX + spacing, baseY));
+	btnNormal_->SetColor(Vector4(0.3f, 0.3f, 0.8f, 1.0f)); // 青
+
+	btnHard_ = Sprite::Create(whiteTexture_, {0, 0});
+	btnHard_->SetSize(Vector2(160, 60));
+	btnHard_->SetPosition(Vector2(baseX + spacing * 2, baseY));
+	btnHard_->SetColor(Vector4(0.8f, 0.2f, 0.2f, 1.0f)); // 赤
+
+	// 選択カーソル
+	cursor_ = Sprite::Create(whiteTexture_, {0, 0});
+	cursor_->SetSize(Vector2(170, 70));
+	cursor_->SetColor(Vector4(1, 1, 1, 0.5f));
 }
 
 void SelectLevel::Update() {
@@ -33,79 +50,106 @@ void SelectLevel::Update() {
 
 	switch (gamePhase_) {
 	case GamePhase::kFadeIn:
-		// フェードインが完全に終わるのを待つ
 		if (fade_->IsFinished()) {
 			gamePhase_ = GamePhase::kPlay;
 		}
 		break;
 
 	case GamePhase::kPlay: {
-		// キーボード: 1=Easy, 2=Normal, 3=Hard
+
+		// キーボード: 1/2/3 で直接選択、A/D で左右移動
 		if (Input::GetInstance()->TriggerKey(DIK_1)) {
-			selectedDifficulty_ = DifficultyLevel::kEasy;
-			fade_->Start(Fade::Status::FadeOut, 1.0f);
-			gamePhase_ = GamePhase::kFadeOut;
+			selectIndex_ = 0;
 		} else if (Input::GetInstance()->TriggerKey(DIK_2)) {
-			selectedDifficulty_ = DifficultyLevel::kNormal;
-			fade_->Start(Fade::Status::FadeOut, 1.0f);
-			gamePhase_ = GamePhase::kFadeOut;
+			selectIndex_ = 1;
 		} else if (Input::GetInstance()->TriggerKey(DIK_3)) {
-			selectedDifficulty_ = DifficultyLevel::kHard;
-			fade_->Start(Fade::Status::FadeOut, 1.0f);
-			gamePhase_ = GamePhase::kFadeOut;
+			selectIndex_ = 2;
+		}
+		if (Input::GetInstance()->TriggerKey(DIK_A)) {
+			if (selectIndex_ > 0) selectIndex_--;
+		}
+		if (Input::GetInstance()->TriggerKey(DIK_D)) {
+			if (selectIndex_ < 2) selectIndex_++;
 		}
 
-		// コントローラー: D-pad 左=Easy, 上=Normal, 右=Hard
+		// コントローラー: D-pad or 左スティック左右で選択（押した瞬間だけ反応）
 		XINPUT_STATE joyState{};
+		bool curLeft = false, curRight = false, curConfirm = false;
 		if (Input::GetInstance()->GetJoystickState(0, joyState)) {
-			if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) {
-				selectedDifficulty_ = DifficultyLevel::kEasy;
-				fade_->Start(Fade::Status::FadeOut, 1.0f);
-				gamePhase_ = GamePhase::kFadeOut;
-			} else if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) {
-				selectedDifficulty_ = DifficultyLevel::kNormal;
-				fade_->Start(Fade::Status::FadeOut, 1.0f);
-				gamePhase_ = GamePhase::kFadeOut;
-			} else if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) {
-				selectedDifficulty_ = DifficultyLevel::kHard;
-				fade_->Start(Fade::Status::FadeOut, 1.0f);
-				gamePhase_ = GamePhase::kFadeOut;
+			curLeft = (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) != 0;
+			curRight = (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) != 0;
+			curConfirm = (joyState.Gamepad.wButtons & (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_START)) != 0;
+
+			// 左スティックの横軸（デッドゾーン8000以上で反応）
+			if (joyState.Gamepad.sThumbLX < -8000) {
+				curLeft = true;
+			} else if (joyState.Gamepad.sThumbLX > 8000) {
+				curRight = true;
 			}
+		}
+		if (curLeft && !prevDpadLeft_) {
+			if (selectIndex_ > 0) selectIndex_--;
+		}
+		if (curRight && !prevDpadRight_) {
+			if (selectIndex_ < 2) selectIndex_++;
+		}
+		prevDpadLeft_ = curLeft;
+		prevDpadRight_ = curRight;
+
+		// 決定（スペース or Aボタンの押した瞬間）
+		bool confirm = Input::GetInstance()->TriggerKey(DIK_SPACE);
+		if (curConfirm && !prevConfirm_) {
+			confirm = true;
+		}
+		prevConfirm_ = curConfirm;
+
+		if (confirm) {
+			switch (selectIndex_) {
+			case 0: selectedDifficulty_ = DifficultyLevel::kEasy; break;
+			case 1: selectedDifficulty_ = DifficultyLevel::kNormal; break;
+			case 2: selectedDifficulty_ = DifficultyLevel::kHard; break;
+			}
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			gamePhase_ = GamePhase::kFadeOut;
 		}
 		break;
 	}
 
 	case GamePhase::kFadeOut:
-		// フェードアウト中：フェードが完全に終わったら、ようやく終了フラグを立てる
 		if (fade_->IsFinished()) {
-			finished_ = true; // ここで初めて main.cpp がシーンを切り替えてくれる
+			finished_ = true;
 		}
 		break;
 	default:
 		break;
 	}
 
-	// --- キャラの行列更新 ---
-	worldTransform_.rotation_.y -= 0.1f;
-	worldTransform_.matWorld_ = MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
-	worldTransform_.TransferMatrix();
-
-	// --- カメラの行列更新 ---
-	// 座標などを変えた後は、UpdateMatrix を呼ばないと画面に反映されません
-	camera_.UpdateMatrix();
+	// カーソル位置を選択中的ボタンに合わせる
+	float baseX = 340.0f;
+	float spacing = 200.0f;
+	cursor_->SetPosition(Vector2(baseX + selectIndex_ * spacing - 5, 295));
 }
 
 void SelectLevel::Draw() {
 
-	Model::PreDraw();
-	// 2. 描画（引数は 3つ）
-	if (modelTitle_) {
-		modelTitle_->Draw(worldTransform_, camera_, &objectColor_);
-	}
-	fade_->Draw();
+	Sprite::PreDraw();
 
-	// 3. 3Dモデル描画後の終了処理
-	Model::PostDraw();
+	titleSprite_->Draw();
+	btnEasy_->Draw();
+	btnNormal_->Draw();
+	btnHard_->Draw();
+	cursor_->Draw();
+
+	Sprite::PostDraw();
+
+	fade_->Draw();
 }
 
-SelectLevel::~SelectLevel() { delete fade_; }
+SelectLevel::~SelectLevel() {
+	delete fade_;
+	delete titleSprite_;
+	delete btnEasy_;
+	delete btnNormal_;
+	delete btnHard_;
+	delete cursor_;
+}

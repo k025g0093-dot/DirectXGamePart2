@@ -27,6 +27,9 @@ public:
 
 	bool IsDead() const { return isDead_; };
 
+	int32_t GetHp() const { return hp_; }
+	int32_t GetMaxHp() const { return kMaxHp; }
+
 	void SetParent(const KamataEngine::WorldTransform* parent);
 
 	void SetLockOn(LockOn* lockOn) { lockOn_ = lockOn; }

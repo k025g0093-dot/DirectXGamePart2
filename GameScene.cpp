@@ -80,6 +80,18 @@ void GameScene::Initialize() {
 	pauseOverlay_->SetSize(Vector2(1280, 720));
 	pauseOverlay_->SetColor(Vector4(0, 0, 0, 0.6f));
 
+	// HP表示
+	uiTexture_ = TextureManager::Load("white1x1.png");
+	hpBarBg_ = Sprite::Create(uiTexture_, {0, 0});
+	hpBarBg_->SetSize(Vector2(204, 24));
+	hpBarBg_->SetPosition(Vector2(20, 20));
+	hpBarBg_->SetColor(Vector4(0.2f, 0.2f, 0.2f, 0.8f));
+
+	hpBarFill_ = Sprite::Create(uiTexture_, {0, 0});
+	hpBarFill_->SetSize(Vector2(200, 20));
+	hpBarFill_->SetPosition(Vector2(22, 22));
+	hpBarFill_->SetColor(Vector4(0.2f, 0.9f, 0.2f, 1.0f));
+
 	LoadEnemyPopData();
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 }
@@ -264,6 +276,18 @@ void GameScene::Draw() {
 	// UIの描画
 	Sprite::PreDraw();
 
+	// HPバー更新・描画
+	if (player_) {
+		float hpRatio = (float)player_->GetHp() / (float)player_->GetMaxHp();
+		hpBarFill_->SetSize(Vector2(200.0f * hpRatio, 20));
+		// HP低いと赤、高いと緑
+		float r = (1.0f - hpRatio) * 0.9f;
+		float g = hpRatio * 0.9f;
+		hpBarFill_->SetColor(Vector4(r, g, 0.2f, 1.0f));
+		hpBarBg_->Draw();
+		hpBarFill_->Draw();
+	}
+
 	// player_->DrawUI();
 	lockOn_->Draw();
 
@@ -301,6 +325,8 @@ GameScene::~GameScene() {
 	delete planeModel_;
 	delete debugCamera_;
 	delete pauseOverlay_;
+	delete hpBarBg_;
+	delete hpBarFill_;
 }
 
 void GameScene::CheckAllCollisions() {

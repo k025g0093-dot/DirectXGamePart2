@@ -96,6 +96,11 @@ public:
 	KamataEngine::Sprite* pauseOverlay_ = nullptr;
 	uint32_t pauseTextureHandle_ = 0;
 
+	// HP表示
+	KamataEngine::Sprite* hpBarBg_ = nullptr;
+	KamataEngine::Sprite* hpBarFill_ = nullptr;
+	uint32_t uiTexture_ = 0;
+
 private:
 	// playerなどのポインタ
 	Player* player_ = nullptr;
