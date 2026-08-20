@@ -182,10 +182,12 @@ void GameScene::GameUpdate() {
 
 	enemies_.remove_if([this](Enemy* enemy) {
 		if (enemy->IsDead()) {
-			// デスパーティクルを生成
-			DeathParticle* p = new DeathParticle();
-			p->Initialize(model3DReticle_, &railCameraController_->GetCamera(), enemy->GetWorldPosition());
-			deathParticles_.push_back(p);
+			// デスパーティクルを複数生成
+			for (int i = 0; i < 8; i++) {
+				DeathParticle* p = new DeathParticle();
+				p->Initialize(model3DReticle_, &railCameraController_->GetCamera(), enemy->GetWorldPosition());
+				deathParticles_.push_back(p);
+			}
 			delete enemy;
 			return true;
 		}

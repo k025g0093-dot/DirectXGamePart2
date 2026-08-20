@@ -16,7 +16,7 @@ private:
 	KamataEngine::ObjectColor objectColor_;
 	KamataEngine::Vector3 velocity_ = {};
 
-	int32_t lifeTime_ = 30;
+	int32_t lifeTime_ = 45;
 	int32_t timer_ = 0;
 	bool isDead_ = false;
 };
