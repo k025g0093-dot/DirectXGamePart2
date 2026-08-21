@@ -92,6 +92,12 @@ void GameScene::Initialize() {
 	hpBarFill_->SetPosition(Vector2(22, 22));
 	hpBarFill_->SetColor(Vector4(0.2f, 0.9f, 0.2f, 1.0f));
 
+	// チュートリアルメッセージ（画面下部に表示）
+	tutorialMsg_ = Sprite::Create(uiTexture_, {0, 0});
+	tutorialMsg_->SetSize(Vector2(600, 40));
+	tutorialMsg_->SetPosition(Vector2(340, 650));
+	tutorialMsg_->SetColor(Vector4(0.0f, 0.0f, 0.0f, 0.7f));
+
 	LoadEnemyPopData();
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 }
@@ -184,6 +190,20 @@ void GameScene::GameUpdate() {
 	// Player と GameScene の参照は SpawnEnemy 側で渡しているのでここでは更新処理だけ
 	for (Enemy* enemy : enemies_) {
 		enemy->Update();
+	}
+
+	// 初回の弱体化時にチュートリアル表示
+	if (!tutorialShown_) {
+		for (Enemy* enemy : enemies_) {
+			if (enemy->IsWeakened()) {
+				tutorialShown_ = true;
+				tutorialTimer_ = 300; // 5秒間表示
+				break;
+			}
+		}
+	}
+	if (tutorialTimer_ > 0) {
+		tutorialTimer_--;
 	}
 
 	// 仲間の更新（ターゲットはロックオン対象。敵の削除前なので参照が安全）
@@ -296,6 +316,11 @@ void GameScene::Draw() {
 		pauseOverlay_->Draw();
 	}
 
+	// チュートリアルメッセージ
+	if (tutorialTimer_ > 0) {
+		tutorialMsg_->Draw();
+	}
+
 	Sprite::PostDraw();
 }
 
@@ -327,6 +352,7 @@ GameScene::~GameScene() {
 	delete pauseOverlay_;
 	delete hpBarBg_;
 	delete hpBarFill_;
+	delete tutorialMsg_;
 }
 
 void GameScene::CheckAllCollisions() {
@@ -534,7 +560,11 @@ void GameScene::SpawnEnemy(EnemyType type, const KamataEngine::Vector3& position
 	enemy->SetPlayer(player_);
 	enemy->SetEnemyType(type);
 
-	enemy->Initialize(enemyModel_, &railCameraController_->GetCamera(), position);
+	// タイプ別モデルがあればそれ、なければデフォルト
+	int typeIndex = (int)type;
+	Model* useModel = (typeIndex < kEnemyTypeCount && enemyTypeModels_[typeIndex]) ? enemyTypeModels_[typeIndex] : enemyModel_;
+
+	enemy->Initialize(useModel, &railCameraController_->GetCamera(), position);
 	enemy->GetEnemyBulletModel(enemyBulletModel_);
 	enemies_.push_back(enemy);
 }

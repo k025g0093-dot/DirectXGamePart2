@@ -61,6 +61,10 @@ public:
 	KamataEngine::Model* enemyModel_ = nullptr;
 	KamataEngine::Model* enemyBulletModel_ = nullptr;
 
+	// タイプごとのモデル（未設定ならenemyModel_が使われる）
+	static const int kEnemyTypeCount = 9;
+	KamataEngine::Model* enemyTypeModels_[kEnemyTypeCount] = {};
+
 	KamataEngine::Model* skyDomeModel_ = nullptr;
 	KamataEngine::Model* planeModel_ = nullptr;
 
@@ -77,6 +81,12 @@ public:
 	void SpawnAlly(const KamataEngine::Vector3& position);
 	void AddAllyBullet(playerBullet* bullet);
 	static const int kMaxAllyCount = 10;
+
+	// タイプ別モデルの設定
+	void SetEnemyTypeModel(EnemyType type, KamataEngine::Model* model) {
+		int idx = (int)type;
+		if (idx < kEnemyTypeCount) enemyTypeModels_[idx] = model;
+	}
 
 
 	// 終了フラグ
@@ -100,6 +110,11 @@ public:
 	KamataEngine::Sprite* hpBarBg_ = nullptr;
 	KamataEngine::Sprite* hpBarFill_ = nullptr;
 	uint32_t uiTexture_ = 0;
+
+	// チュートリアルメッセージ
+	KamataEngine::Sprite* tutorialMsg_ = nullptr;
+	int32_t tutorialTimer_ = 0;
+	bool tutorialShown_ = false;
 
 private:
 	// playerなどのポインタ

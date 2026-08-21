@@ -21,7 +21,7 @@ void Player::Initialize(
 ) {
 
 	worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
-	worldTransform_.rotation_ = {0.0f, 90.0f, 0.0f};
+	worldTransform_.rotation_ = {0.0f, 0.0f, 0.0f};
 	worldTransform_.translation_ = {0.0f, 0.0f, 0.0f};
 	objectColor_.Initialize();
 	objectColor_.SetColor({1.0f, 1.0f, 1.0f, alfaColor});
@@ -150,6 +150,8 @@ void Player::MovePlayer() {
 void Player::Rotate() {
 
 	const float kRotSpeed = 0.02f;
+	const float kMaxRotY = 0.8f; // 左右の回転制限（ラジアン）
+
 	if (input_->PushKey(DIK_Q)) {
 		worldTransform_.rotation_.y += kRotSpeed;
 	} else if (input_->PushKey(DIK_E)) {
@@ -159,13 +161,26 @@ void Player::Rotate() {
 	// ゲームパッドの状態取得
 	XINPUT_STATE joyState{};
 	if (Input::GetInstance()->GetJoystickState(0, joyState)) {
-		worldTransform_.rotation_.x += (float)joyState.Gamepad.sThumbRY / SHRT_MAX * kRotSpeed;
 		worldTransform_.rotation_.y -= (float)joyState.Gamepad.sThumbRX / SHRT_MAX * kRotSpeed;
+	}
+
+	// 回転制限をクランプ
+	if (worldTransform_.rotation_.y > kMaxRotY) {
+		worldTransform_.rotation_.y = kMaxRotY;
+	}
+	if (worldTransform_.rotation_.y < -kMaxRotY) {
+		worldTransform_.rotation_.y = -kMaxRotY;
 	}
 }
 
 // 攻撃
 void Player::Attack() {
+
+	// クールダウン中は撃てない
+	if (fireCooldown_ > 0) {
+		fireCooldown_--;
+		return;
+	}
 
 	if (input_->TriggerKey(DIK_SPACE)) {
 		if (lockOn_->isLockedOn_) {
@@ -182,6 +197,7 @@ void Player::Attack() {
 				playerBullet* newBullet = new playerBullet();
 				newBullet->Initialize(model_, playerPos, velocity);
 				bullets_.push_back(newBullet);
+				fireCooldown_ = kFireInterval;
 			}
 
 		} else {
@@ -194,6 +210,7 @@ void Player::Attack() {
 
 			newBullet->Initialize(model_, GetWorldPosition(), velocity);
 			bullets_.push_back(newBullet);
+			fireCooldown_ = kFireInterval;
 		}
 	}
 
@@ -220,6 +237,7 @@ void Player::Attack() {
 				playerBullet* newBullet = new playerBullet();
 				newBullet->Initialize(model_, playerPos, velocity);
 				bullets_.push_back(newBullet);
+				fireCooldown_ = kFireInterval;
 			}
 
 		} else {
@@ -232,6 +250,7 @@ void Player::Attack() {
 
 			newBullet->Initialize(model_, GetWorldPosition(), velocity);
 			bullets_.push_back(newBullet);
+			fireCooldown_ = kFireInterval;
 		}
 	}
 }

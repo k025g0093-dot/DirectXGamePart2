@@ -47,6 +47,10 @@ public:
 	void SetGameScene(GameScene* gameScene) { gameScene_ = gameScene; }
 	void GetEnemyBulletModel(KamataEngine::Model* enemyBulletModel_) { bulletModel_ = enemyBulletModel_; }
 
+	void SetModel(KamataEngine::Model* model) { model_ = model; }
+	KamataEngine::Model* GetModel() const { return model_; }
+	EnemyType GetEnemyType() const { return enemyType_; }
+
 	EnemyType enemyType_ = EnemyType::kNormal;
 	void SetEnemyType(EnemyType type) { enemyType_ = type; }
 
@@ -54,6 +58,8 @@ public:
 	float GetCollisionRadius() const { return collisionRadius_; }
 	bool isWeakened_ = false;
 	bool IsWeakened() const { return isWeakened_; }
+	int32_t GetHp() const { return hp_; }
+	int32_t GetMaxHp() const { return kMaxHp; }
 
 private:
 	// 3Dモデルで必要なモデルの呼び出し

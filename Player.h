@@ -121,6 +121,9 @@ private:
 	int32_t hp_ = 5;
 	// プレイヤーのHPの最大値
 	static const int32_t kMaxHp = 5;
+	// 発射クールダウン
+	int32_t fireCooldown_ = 0;
+	static const int32_t kFireInterval = 10;
 	//30Fの無敵時間
 	int32_t incvincibleTimer_ = 0;
 	int32_t incvincibleTimerMax_ = 30;
