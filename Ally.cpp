@@ -24,14 +24,18 @@ void Ally::Initialize(
 	objectColor_.Initialize();
 	objectColor_.SetColor({1.0f, 1.0f, 1.0f, 1.0f});
 
+	// 出現アニメーション：スケール0から始める
+	worldTransform_.scale_ = {0.0f, 0.0f, 0.0f};
+	spawnTimer_ = 0;
+
 	velocity_ = {0, 0, -0.01f};
 	camera_ = camera;
 
-	// 5体で1列の編隊を組み、いっぱいになったら後ろの列に回す
-	int32_t row = slotIndex / 5;
-	int32_t col = slotIndex % 5;
+	// 3体で1列、奥に広がる編隊
+	int32_t row = slotIndex / 3;
+	int32_t col = slotIndex % 3;
 
-	slotOffset_ = {(col - 2) * 2.0f, 0.5f + row * 1.5f, (4.0f + row * 3.0f)};
+	slotOffset_ = {(col - 1) * 3.5f, 0.3f + row * 1.2f, (3.0f + row * 2.5f)};
 
 	// ゆらぎの位相を機体ごとにずらして、全員が同じ揺れ方にならないようにする
 	swayTimer_ = (float)(slotIndex % 7) * 0.5f;
@@ -40,6 +44,17 @@ void Ally::Initialize(
 }
 
 void Ally::Updata() {
+
+	// 出現アニメーション（スケールアップ）
+	if (spawnTimer_ < kSpawnDuration) {
+		spawnTimer_++;
+		float t = (float)spawnTimer_ / (float)kSpawnDuration;
+		// イージング（-outQuad: 最後でスローになる）
+		float scale = targetScale_ * (1.0f - (1.0f - t) * (1.0f - t));
+		worldTransform_.scale_ = {scale, scale, scale};
+	} else {
+		worldTransform_.scale_ = {targetScale_, targetScale_, targetScale_};
+	}
 
 	FollowFotmation();
 	Attack();
@@ -66,6 +81,7 @@ void Ally::Attack() {
 
 		playerBullet* newBullet = new playerBullet();
 		newBullet->Initialize(bulletModel_, allyPos, velocity);
+		newBullet->SetFlip(true);
 		gamescene_->AddAllyBullet(newBullet);
 
 		shotTimer_ = kFireInterval;

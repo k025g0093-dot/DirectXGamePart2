@@ -34,7 +34,7 @@ void Player::Initialize(
 	// ワールドトランスフォームの初期化
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
-	worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
+	worldTransform_.rotation_.y = 0.0f;
 
 	// 3Dレティクルのワールドトランスフォームの初期化
 	worldTransform3DReticle_.Initialize();
@@ -120,6 +120,8 @@ void Player::MovePlayer() {
 #ifdef _DEBUG
 	ImGui::Begin("PlayerPostion");
 	ImGui::DragFloat3("position", &worldTransform_.translation_.x, 0.01f, -100.0f, 100.0f);
+	ImGui::DragFloat3("rotation_", &worldTransform_.rotation_.x, 0.01f, -100.0f, 100.0f);
+
 	ImGui::End();
 #endif
 
@@ -162,6 +164,10 @@ void Player::Rotate() {
 	XINPUT_STATE joyState{};
 	if (Input::GetInstance()->GetJoystickState(0, joyState)) {
 		worldTransform_.rotation_.y -= (float)joyState.Gamepad.sThumbRX / SHRT_MAX * kRotSpeed;
+		// 右スティック上下でレティクルを上下移動
+		reticleOffsetY_ += (float)joyState.Gamepad.sThumbRY / SHRT_MAX * 0.15f;
+		reticleOffsetY_ = std::max(reticleOffsetY_, -5.0f);
+		reticleOffsetY_ = std::min(reticleOffsetY_, 5.0f);
 	}
 
 	// 回転制限をクランプ
@@ -195,7 +201,7 @@ void Player::Attack() {
 				const float kBulletSpeed = 1.0f;
 				Vector3 velocity = direction * kBulletSpeed;
 				playerBullet* newBullet = new playerBullet();
-				newBullet->Initialize(model_, playerPos, velocity);
+				newBullet->Initialize(bulletModel_, playerPos, velocity);
 				bullets_.push_back(newBullet);
 				fireCooldown_ = kFireInterval;
 			}
@@ -208,7 +214,7 @@ void Player::Attack() {
 
 			playerBullet* newBullet = new playerBullet();
 
-			newBullet->Initialize(model_, GetWorldPosition(), velocity);
+			newBullet->Initialize(bulletModel_, GetWorldPosition(), velocity);
 			bullets_.push_back(newBullet);
 			fireCooldown_ = kFireInterval;
 		}
@@ -235,7 +241,7 @@ void Player::Attack() {
 				const float kBulletSpeed = 1.0f;
 				Vector3 velocity = direction * kBulletSpeed;
 				playerBullet* newBullet = new playerBullet();
-				newBullet->Initialize(model_, playerPos, velocity);
+				newBullet->Initialize(bulletModel_, playerPos, velocity);
 				bullets_.push_back(newBullet);
 				fireCooldown_ = kFireInterval;
 			}
@@ -248,7 +254,7 @@ void Player::Attack() {
 
 			playerBullet* newBullet = new playerBullet();
 
-			newBullet->Initialize(model_, GetWorldPosition(), velocity);
+			newBullet->Initialize(bulletModel_, GetWorldPosition(), velocity);
 			bullets_.push_back(newBullet);
 			fireCooldown_ = kFireInterval;
 		}
@@ -291,6 +297,7 @@ void Player::Update3DReticlePosition() {
 	offset = Normalize(offset) * kDistancePlayerTo3DReticle;
 
 	worldTransform3DReticle_.translation_ = GetWorldPosition() + offset;
+	worldTransform3DReticle_.translation_.y += reticleOffsetY_;
 	UpdateWorldTransform(worldTransform3DReticle_);
 }
 

@@ -35,6 +35,7 @@ void GameScene::Initialize() {
 
 	enemyModel_ = Model::CreateFromOBJ("enemy", true);
 	enemyBulletModel_ = Model::CreateFromOBJ("enemyBullets", true);
+	playerBulletModel_ = Model::CreateFromOBJ("playerBullets", true);
 
 	skyDomeModel_ = Model::CreateFromOBJ("skydome", true);
 	planeModel_ = Model::CreateFromOBJ("plane", true);
@@ -54,6 +55,7 @@ void GameScene::Initialize() {
 	player_->SetParent(&railCameraController_->GetWorldTransform());
 	player_->Get3DReticleModel(model3DReticle_);
 	player_->SetLockOn(lockOn_);
+	player_->SetBulletModel(playerBulletModel_);
 
 	// 最初の1体も SpawnEnemy 経由で出すことで、参照のセット漏れをなくす
 	SpawnEnemy(EnemyType::kNormal, {5, 0, 10});
@@ -214,12 +216,18 @@ void GameScene::GameUpdate() {
 
 	enemies_.remove_if([this](Enemy* enemy) {
 		if (enemy->IsDead()) {
-			// デスパーティクルを複数生成
+			// 通常死亡時のみデスパーティクルを生成
 			for (int i = 0; i < 8; i++) {
 				DeathParticle* p = new DeathParticle();
 				p->Initialize(model3DReticle_, &railCameraController_->GetCamera(), enemy->GetWorldPosition());
 				deathParticles_.push_back(p);
 			}
+			delete enemy;
+			return true;
+		}
+		// 味方化イージング完了時に味方をスポーンして敵を削除
+		if (enemy->IsConversionDone()) {
+			SpawnAlly(enemy->GetWorldPosition());
 			delete enemy;
 			return true;
 		}
@@ -346,6 +354,7 @@ GameScene::~GameScene() {
 	delete playerModel_;
 	delete enemyModel_;
 	delete enemyBulletModel_;
+	delete playerBulletModel_;
 	delete skyDomeModel_;
 	delete planeModel_;
 	delete debugCamera_;
@@ -417,11 +426,10 @@ void GameScene::CheckAllCollisions() {
 			float bulletRadius = 0.5f;
 
 			if (distance < EnemyRadius + bulletRadius) {
-				// 弱体化した敵をロックオン中に撃つと仲間化する
-				if (enemy->IsWeakened() && enemy == lockOn_->GetTarget() && allies_.size() < (size_t)kMaxAllyCount) {
-					SpawnAlly(enemy->GetWorldPosition());
-					enemy->isDead_ = true;
-				} else {
+				// 弱体化した敵をロックオン中に撃つと味方化イージング開始
+				if (enemy->IsWeakened() && enemy == lockOn_->GetTarget() && !enemy->IsConverting() && allies_.size() < (size_t)kMaxAllyCount) {
+					enemy->StartConversion(player_->GetWorldPosition());
+				} else if (!enemy->IsConverting()) {
 					// 地キャラの衝突判定
 					enemy->OnCollision();
 				}
@@ -445,7 +453,9 @@ void GameScene::CheckAllCollisions() {
 			float bulletRadius = 0.5f;
 
 			if (distance < EnemyRadius + bulletRadius) {
-				enemy->OnCollision();
+				if (!enemy->IsConverting()) {
+					enemy->OnCollision();
+				}
 				bullet->OnCollision();
 			}
 		}
@@ -575,7 +585,7 @@ void GameScene::SpawnAlly(const KamataEngine::Vector3& position) {
 	ally->Initialize(playerModel_, &railCameraController_->GetCamera(), position, (int32_t)allies_.size());
 	ally->SetPlayer(player_);
 	ally->SetGameScene(this);
-	ally->SetBulletModel(playerModel_);
+	ally->SetBulletModel(enemyBulletModel_);
 	allies_.push_back(ally);
 }
 

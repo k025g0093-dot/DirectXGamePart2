@@ -57,7 +57,7 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 		worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
 		collisionRadius_ = 1.0f;
 		velocity_ = {0, 0, -0.08f};
-		fireInterval_ = 10; // 連射
+		fireInterval_ = 20; // 連射
 		break;
 
 	case EnemyType::kWave:
@@ -67,7 +67,7 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 		velocity_ = {0, 0, -0.05f};
 		moveAmplitude_ = 6.0f; // 左右の振れ幅
 		moveSpeed_ = 0.04f;    // 波の速さ
-		fireInterval_ = 50;
+		fireInterval_ = 70;
 		break;
 
 	case EnemyType::kRush:
@@ -79,8 +79,8 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 		worldTransform_.scale_ = {0.8f, 0.8f, 0.8f};
 		collisionRadius_ = 0.8f;
 		velocity_ = {0, 0, -0.02f}; // 溜め中はゆっくり
-		rushChargeTime_ = 60;       // 溜め時間（フレーム）
-		rushSpeed_ = 0.35f;         // 突進速度
+		rushChargeTime_ = 120;       // 溜め時間（フレーム）2秒に延長
+		rushSpeed_ = 0.25f;          // 突進速度を少し緩め
 		break;
 
 	case EnemyType::kHover:
@@ -91,7 +91,7 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 		advanceTime_ = 120;    // 前進する時間（フレーム）
 		moveAmplitude_ = 6.0f; // 往復の幅
 		moveSpeed_ = 0.03f;
-		fireInterval_ = 40;
+		fireInterval_ = 60;
 		break;
 
 	case EnemyType::kDive:
@@ -101,7 +101,7 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 		velocity_ = {0, 0, -0.04f};
 		diveTargetY_ = position.y - 10.0f; // スポーン位置から10だけ降りる
 		diveSpeed_ = 0.10f;
-		fireInterval_ = 45;
+		fireInterval_ = 65;
 		break;
 
 	case EnemyType::kOrbit:
@@ -123,7 +123,7 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 		velocity_ = {0, 0, 0.016f}; // プレイヤーと同じ方向（+Z）に前進
 		moveAmplitude_ = 10.0f;
 		moveSpeed_ = 0.015f;
-		fireInterval_ = 30;
+		fireInterval_ = 50;
 		break;
 
 	default:
@@ -136,9 +136,30 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 }
 
 void Enemy::Update() {
-	if (!isDead_) {
+	if (isDead_) {
+		return;
+	}
 
-		switch (phase_) {
+	// 味方化イージング中
+	if (isConverting_) {
+		convertTimer_++;
+		float t = (float)convertTimer_ / (float)kConvertDuration;
+		// ease-out quad
+		float ease = 1.0f - (1.0f - t) * (1.0f - t);
+		worldTransform_.translation_.x = convertStartPos_.x + (convertTargetPos_.x - convertStartPos_.x) * ease;
+		worldTransform_.translation_.y = convertStartPos_.y + (convertTargetPos_.y - convertStartPos_.y) * ease;
+		worldTransform_.translation_.z = convertStartPos_.z + (convertTargetPos_.z - convertStartPos_.z) * ease;
+		// 徐々に小さくなる
+		float scale = 1.0f * (1.0f - ease);
+		worldTransform_.scale_ = {scale, scale, scale};
+		UpdateWorldTransform(worldTransform_);
+		if (convertTimer_ >= kConvertDuration) {
+			conversionDone_ = true;
+		}
+		return;
+	}
+
+	switch (phase_) {
 		case Phase::Approach:
 
 			UpdateApproach();
@@ -154,7 +175,6 @@ void Enemy::Update() {
 		}
 
 		UpdateWorldTransform(worldTransform_);
-	}
 }
 
 void Enemy::Draw() {
@@ -163,6 +183,16 @@ void Enemy::Draw() {
 }
 
 void Enemy::InitApproach() { kShotTimer = fireInterval_; }
+
+void Enemy::StartConversion(const Vector3& targetPos) {
+	isConverting_ = true;
+	conversionDone_ = false;
+	convertTimer_ = 0;
+	convertStartPos_ = GetWorldPosition();
+	convertTargetPos_ = targetPos;
+	// 移動・射撃を止める
+	velocity_ = {0, 0, 0};
+}
 
 void Enemy::UpdateApproach() {
 

@@ -35,7 +35,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	// 初期化
 	//============================
 
-	KamataEngine::Initialize(L"LE2B_29_ヤマト_ユウヤ_AL3_3Dレールシューティング");
+	KamataEngine::Initialize(L"味方はぜんぶ、元は敵");
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
 	ImGuiManager* imguiManager = ImGuiManager::GetInstance();

@@ -51,7 +51,12 @@ private:
 
 	float swayTimer_ = 0.0f;
 	int32_t shotTimer_ = 0;
-	static const int32_t kFireInterval = 90;
+	static const int32_t kFireInterval = 50;
+
+	// 出現アニメーション
+	int32_t spawnTimer_ = 0;
+	static const int32_t kSpawnDuration = 20;
+	float targetScale_ = 1.0f;
 
 private: // 追従の調整用（数値を下げるほど動きが落ち着く）
 	// 定位置へ寄っていく速さ
@@ -59,6 +64,6 @@ private: // 追従の調整用（数値を下げるほど動きが落ち着く�
 	// ゆらぎの進む速さ
 	float swaySpeed_ = 0.05f;
 	// ゆらぎの振れ幅（0.0f にすると完全に定位置で止まる）
-	float swayAmplitudeX_ = 0.5f;
-	float swayAmplitudeY_ = 0.3f;
+	float swayAmplitudeX_ = 0.8f;
+	float swayAmplitudeY_ = 0.4f;
 };

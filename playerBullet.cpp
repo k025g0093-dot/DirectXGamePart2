@@ -12,6 +12,19 @@ void playerBullet::Initialize(Model* model, const Vector3& position, const Vecto
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
 	velocity_ = velocity;
+
+	// 進行方向に回転を合わせる（Y軸回転 + X軸回転）
+	float lengthXZ = sqrtf(velocity.x * velocity.x + velocity.z * velocity.z);
+	if (lengthXZ > 0.001f) {
+		worldTransform_.rotation_.y = -atan2f(velocity.x, velocity.z);
+	}
+	if (lengthXZ > 0.001f || fabsf(velocity.y) > 0.001f) {
+		worldTransform_.rotation_.x = atan2f(velocity.y, lengthXZ);
+	}
+	// 前後反転
+	if (flip_) {
+		worldTransform_.rotation_.y += 3.14159f;
+	}
 }
 
 void playerBullet::Update() {

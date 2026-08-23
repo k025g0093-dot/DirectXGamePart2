@@ -47,6 +47,7 @@ public:
 	const std::list<playerBullet*>& GetBullets() const { return bullets_; }
 
 	void Get3DReticleModel(KamataEngine::Model* model3DReticle) { model3DReticle_ = model3DReticle; }
+	void SetBulletModel(KamataEngine::Model* model) { bulletModel_ = model; }
 	void Gaet2DReticlePosition(KamataEngine::Vector2& position) { position = reticlePosition2D; }
 
 #pragma region プレイヤーの向きを変えるのに使用するもの
@@ -86,6 +87,7 @@ public:
 	// 3Dモデルで必要なモデルの呼び出し
 	KamataEngine::Model* model_ = nullptr;
 	KamataEngine::Model* model3DReticle_ = nullptr;
+	KamataEngine::Model* bulletModel_ = nullptr;
 
 	// 2Dレティクルの画像入れるやつ
 	KamataEngine::Sprite* sprite2DReticle_ = nullptr;
@@ -100,6 +102,7 @@ public:
 	LockOn* lockOn_;
 
 	KamataEngine::WorldTransform worldTransform3DReticle_;
+	float reticleOffsetY_ = 0.0f; // レティクルの上下オフセット
 
 	KamataEngine::Vector2 reticlePosition2D = {};
 
@@ -123,7 +126,7 @@ private:
 	static const int32_t kMaxHp = 5;
 	// 発射クールダウン
 	int32_t fireCooldown_ = 0;
-	static const int32_t kFireInterval = 10;
+	static const int32_t kFireInterval = 3;
 	//30Fの無敵時間
 	int32_t incvincibleTimer_ = 0;
 	int32_t incvincibleTimerMax_ = 30;

@@ -60,6 +60,7 @@ public:
 
 	KamataEngine::Model* enemyModel_ = nullptr;
 	KamataEngine::Model* enemyBulletModel_ = nullptr;
+	KamataEngine::Model* playerBulletModel_ = nullptr;
 
 	// タイプごとのモデル（未設定ならenemyModel_が使われる）
 	static const int kEnemyTypeCount = 9;
@@ -80,7 +81,7 @@ public:
 
 	void SpawnAlly(const KamataEngine::Vector3& position);
 	void AddAllyBullet(playerBullet* bullet);
-	static const int kMaxAllyCount = 10;
+	static const int kMaxAllyCount = 15;
 
 	// タイプ別モデルの設定
 	void SetEnemyTypeModel(EnemyType type, KamataEngine::Model* model) {

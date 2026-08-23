@@ -34,7 +34,13 @@ public:
 	void Draw();
 
 	bool isDead_ = false;
+	bool isConverting_ = false; // 味方化イージング中
 	bool IsDead() const { return isDead_; };
+	bool IsConverting() const { return isConverting_; };
+
+	// 味方化イージング開始
+	void StartConversion(const KamataEngine::Vector3& targetPos);
+	bool IsConversionDone() const { return conversionDone_; };
 
 	Player* player_ = nullptr;
 	void SetPlayer(Player* player) { player_ = player; }
@@ -86,6 +92,13 @@ private:
 	KamataEngine::Vector3 circleCenter_ = {}; // 円の中心（スポーン位置）
 
 	GameScene* gameScene_ = nullptr;
+
+	// 味方化イージング
+	int32_t convertTimer_ = 0;
+	static const int32_t kConvertDuration = 30;
+	KamataEngine::Vector3 convertStartPos_ = {};
+	KamataEngine::Vector3 convertTargetPos_ = {};
+	bool conversionDone_ = false;
 
 private: // 追加した移動パターンで使うパラメータ
 	// 波状移動・往復移動などで共通して使う進行角
