@@ -57,6 +57,7 @@ public:
 	KamataEngine::Model* model_ = nullptr;
 	KamataEngine::Model* playerModel_ = nullptr;
 	KamataEngine::Model* model3DReticle_ = nullptr;
+	KamataEngine::Model* deathParticleModel_ = nullptr;
 
 	KamataEngine::Model* enemyModel_ = nullptr;
 	KamataEngine::Model* enemyBulletModel_ = nullptr;
@@ -68,6 +69,8 @@ public:
 
 	KamataEngine::Model* skyDomeModel_ = nullptr;
 	KamataEngine::Model* planeModel_ = nullptr;
+	KamataEngine::Model* shieldEnemyModel_ = nullptr;
+	KamataEngine::Model* allyModel_ = nullptr;
 
 	// 敵のポップデータ
 	std::stringstream enemyPopCommands;
@@ -79,7 +82,7 @@ public:
 
 	// この先に小分けにしていく関数などを書く
 
-	void SpawnAlly(const KamataEngine::Vector3& position);
+	void SpawnAlly(const KamataEngine::Vector3& position, KamataEngine::Model* model);
 	void AddAllyBullet(playerBullet* bullet);
 	static const int kMaxAllyCount = 15;
 

@@ -21,7 +21,9 @@ void playerBullet::Initialize(Model* model, const Vector3& position, const Vecto
 	if (lengthXZ > 0.001f || fabsf(velocity.y) > 0.001f) {
 		worldTransform_.rotation_.x = atan2f(velocity.y, lengthXZ);
 	}
-	// 前後反転
+}
+
+void playerBullet::ApplyFlip() {
 	if (flip_) {
 		worldTransform_.rotation_.y += 3.14159f;
 	}

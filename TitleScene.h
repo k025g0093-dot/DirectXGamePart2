@@ -40,4 +40,10 @@ private:
 
 	// ★これを追加
 	KamataEngine::ObjectColor objectColor_;
+
+	// 「PRESS START」表示用スプライト
+	KamataEngine::Sprite* pressStartSprite_ = nullptr;
+	uint32_t pressStartTexture_ = 0;
+	float blinkTimer_ = 0.0f;
+	bool showPressStart_ = true;
 };

@@ -18,6 +18,14 @@ void TitleScene::Initialize() {
 	camera_.Initialize();
 	objectColor_.Initialize();
 
+	// 「PRESS START」スプライト（白い四角を画面下部に配置）
+	pressStartTexture_ = TextureManager::Load("white1x1.png");
+	pressStartSprite_ = Sprite::Create(pressStartTexture_, {0, 0});
+	// 画面中央下に配置（1280x720基準）
+	pressStartSprite_->SetPosition(Vector2(440.0f, 600.0f));
+	pressStartSprite_->SetSize(Vector2(400.0f, 40.0f));
+	pressStartSprite_->SetColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+
 	// 1. キャラを正面に向ける設定
 	worldTransform_.scale_ = {0.8f, 0.8f, 0.8f};    // 少し大きく設定
 	worldTransform_.rotation_ = {0.0f, 0.0f, 0.0f}; // 向きが逆なら 3.1415f (180度) に
@@ -51,6 +59,7 @@ void TitleScene::Update() {
 		}
 
 		if (start) {
+			showPressStart_ = false;
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
 			gamePhase_ = GamePhase::kFadeOut;
 		}
@@ -75,6 +84,13 @@ void TitleScene::Update() {
 	// --- カメラの行列更新 ---
 	// 座標などを変えた後は、UpdateMatrix を呼ばないと画面に反映されません
 	camera_.UpdateMatrix();
+
+	// 「PRESS START」点滅演出
+	if (gamePhase_ == GamePhase::kPlay && showPressStart_) {
+		blinkTimer_ += 0.05f;
+		float alpha = (sinf(blinkTimer_) * 0.5f + 0.5f);
+		pressStartSprite_->SetColor(Vector4(1.0f, 1.0f, 1.0f, alpha));
+	}
 }
 
 void TitleScene::Draw() {
@@ -88,8 +104,16 @@ void TitleScene::Draw() {
 
 	// 3. 3Dモデル描画後の終了処理
 	Model::PostDraw();
+
+	// 2Dスプライト描画
+	Sprite::PreDraw();
+	if (showPressStart_) {
+		pressStartSprite_->Draw();
+	}
+	Sprite::PostDraw();
 }
 
 TitleScene::~TitleScene() {
 	delete fade_;
+	delete pressStartSprite_;
 }

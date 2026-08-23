@@ -35,14 +35,38 @@ private:
 	KamataEngine::Sprite* btnEasy_ = nullptr;
 	KamataEngine::Sprite* btnNormal_ = nullptr;
 	KamataEngine::Sprite* btnHard_ = nullptr;
+	KamataEngine::Sprite* btnTutorial_ = nullptr;
 
 	// 選択カーソル
 	KamataEngine::Sprite* cursor_ = nullptr;
-	int32_t selectIndex_ = 1; // 0=Easy, 1=Normal, 2=Hard
+	int32_t selectIndex_ = 1; // 0=Easy, 1=Normal, 2=Hard, 3=Tutorial
 	bool prevDpadLeft_ = false;
 	bool prevDpadRight_ = false;
 	bool prevConfirm_ = false;
+	bool prevBack_ = false;
+
+	// 難易度説明テキスト（白色四角で表現）
+	KamataEngine::Sprite* descBg_ = nullptr;
+	KamataEngine::Sprite* descTextEasy_ = nullptr;
+	KamataEngine::Sprite* descTextNormal_ = nullptr;
+	KamataEngine::	Sprite* descTextHard_ = nullptr;
+	KamataEngine::Sprite* descTextTutorial_ = nullptr;
+
+	// チュートリアルパネル
+	bool showTutorial_ = false;
+	KamataEngine::Sprite* tutorialBg_ = nullptr;
+	KamataEngine::Sprite* tutorialTitle_ = nullptr;
+	KamataEngine::Sprite* tutorialText1_ = nullptr;
+	KamataEngine::Sprite* tutorialText2_ = nullptr;
+	KamataEngine::Sprite* tutorialText3_ = nullptr;
+	KamataEngine::Sprite* tutorialText4_ = nullptr;
+	KamataEngine::Sprite* tutorialText5_ = nullptr;
+	KamataEngine::Sprite* tutorialBack_ = nullptr;
 
 	// タイトルテクスチャ
 	KamataEngine::Sprite* titleSprite_ = nullptr;
+
+	// 「PRESS START」表示用スプライト
+	KamataEngine::Sprite* pressStartSprite_ = nullptr;
+	float blinkTimer_ = 0.0f;
 };

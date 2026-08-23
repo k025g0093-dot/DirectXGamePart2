@@ -41,7 +41,7 @@ void Player::Initialize(
 
 	// ２Dレティクル初期化
 	uint32_t textureReticle = TextureManager::Load("2DReticle.png");
-	sprite2DReticle_ = Sprite::Create(textureReticle, {0, 0}, {1, 1, 1, 1}, {0.5f, 0.5f});
+	sprite2DReticle_ = Sprite::Create(textureReticle, {0, 0}, {1, 1, 1, 0.6f}, {0.5f, 0.5f});
 
 	camera_ = camera;
 

@@ -27,15 +27,15 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 
 	switch (level) {
 	case DifficultyLevel::kEasy:
-		kMaxHp = 3;
+		kMaxHp = 2;
 		break;
 
 	case DifficultyLevel::kNormal:
-		kMaxHp = 5;
+		kMaxHp = 3;
 		break;
 
 	case DifficultyLevel::kHard:
-		kMaxHp = 8;
+		kMaxHp = 5;
 		break;
 	default:
 		break;

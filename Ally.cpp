@@ -82,6 +82,7 @@ void Ally::Attack() {
 		playerBullet* newBullet = new playerBullet();
 		newBullet->Initialize(bulletModel_, allyPos, velocity);
 		newBullet->SetFlip(true);
+		newBullet->ApplyFlip();
 		gamescene_->AddAllyBullet(newBullet);
 
 		shotTimer_ = kFireInterval;

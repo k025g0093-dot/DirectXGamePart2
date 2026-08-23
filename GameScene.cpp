@@ -31,7 +31,8 @@ void GameScene::Initialize() {
 	TextureManager::Load("2DReticle.png");
 	// ここのモデルは今後変更予定です、さらに名前も具ちゃってるのでそこも変更予定です
 	playerModel_ = Model::CreateFromOBJ("player", true);
-	model3DReticle_ = Model::CreateFromOBJ("deathParticle", true);
+	model3DReticle_ = Model::CreateFromOBJ("3DReticle", true);
+	deathParticleModel_ = Model::CreateFromOBJ("deathParticle", true);
 
 	enemyModel_ = Model::CreateFromOBJ("enemy", true);
 	enemyBulletModel_ = Model::CreateFromOBJ("enemyBullets", true);
@@ -39,6 +40,11 @@ void GameScene::Initialize() {
 
 	skyDomeModel_ = Model::CreateFromOBJ("skydome", true);
 	planeModel_ = Model::CreateFromOBJ("plane", true);
+	shieldEnemyModel_ = Model::CreateFromOBJ("shieldEnemy", true);
+	allyModel_ = Model::CreateFromOBJ("ally", true);
+
+	// タイプ別モデルの割り当て（今後追加分岐用）
+	SetEnemyTypeModel(EnemyType::kTank, shieldEnemyModel_);
 
 #pragma region カメラコントローラーの設定
 	railCameraController_->Initialize();
@@ -219,7 +225,7 @@ void GameScene::GameUpdate() {
 			// 通常死亡時のみデスパーティクルを生成
 			for (int i = 0; i < 8; i++) {
 				DeathParticle* p = new DeathParticle();
-				p->Initialize(model3DReticle_, &railCameraController_->GetCamera(), enemy->GetWorldPosition());
+				p->Initialize(deathParticleModel_, &railCameraController_->GetCamera(), enemy->GetWorldPosition());
 				deathParticles_.push_back(p);
 			}
 			delete enemy;
@@ -227,7 +233,7 @@ void GameScene::GameUpdate() {
 		}
 		// 味方化イージング完了時に味方をスポーンして敵を削除
 		if (enemy->IsConversionDone()) {
-			SpawnAlly(enemy->GetWorldPosition());
+			SpawnAlly(enemy->GetWorldPosition(), allyModel_);
 			delete enemy;
 			return true;
 		}
@@ -357,6 +363,10 @@ GameScene::~GameScene() {
 	delete playerBulletModel_;
 	delete skyDomeModel_;
 	delete planeModel_;
+	delete shieldEnemyModel_;
+	delete allyModel_;
+	delete model3DReticle_;
+	delete deathParticleModel_;
 	delete debugCamera_;
 	delete pauseOverlay_;
 	delete hpBarBg_;
@@ -579,10 +589,10 @@ void GameScene::SpawnEnemy(EnemyType type, const KamataEngine::Vector3& position
 	enemies_.push_back(enemy);
 }
 
-void GameScene::SpawnAlly(const KamataEngine::Vector3& position) {
+void GameScene::SpawnAlly(const KamataEngine::Vector3& position, KamataEngine::Model* model) {
 	Ally* ally = new Ally();
 
-	ally->Initialize(playerModel_, &railCameraController_->GetCamera(), position, (int32_t)allies_.size());
+	ally->Initialize(model, &railCameraController_->GetCamera(), position, (int32_t)allies_.size());
 	ally->SetPlayer(player_);
 	ally->SetGameScene(this);
 	ally->SetBulletModel(enemyBulletModel_);

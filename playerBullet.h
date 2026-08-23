@@ -7,7 +7,7 @@ class playerBullet {
 public:
 	void Initialize(KamataEngine::Model* model,const KamataEngine::Vector3& position, const KamataEngine::Vector3& velocity);
 	void Update();
-	void Draw(const Camera* camera);
+	void Draw(const KamataEngine::Camera* camera);
 	bool IsDead() const { return isDead_; }
 
 	// 当たり判定のコールバック
@@ -15,6 +15,7 @@ public:
 	KamataEngine::Vector3 GetWorldPosition();
 	void SetParent(const KamataEngine::WorldTransform* parent);
 	void SetFlip(bool flip) { flip_ = flip; }
+	void ApplyFlip();
 
 private:
 
