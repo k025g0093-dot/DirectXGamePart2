@@ -16,7 +16,7 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 	objectColor_.Initialize();
 	objectColor_.SetColor({1.0f, 1.0f, 1.0f, 1.0f});
 
-	velocity_ = {0, 0, -0.01f};
+	velocity_ = {0, 0, -0.012f};
 	camera_ = camera;
 
 	// 移動パターンの基準になる位置（スポーン地点）を覚えておく
@@ -48,7 +48,7 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 		kMaxHp *= 3;
 		worldTransform_.scale_ = {2.0f, 2.0f, 2.0f};
 		collisionRadius_ = 2.0f;
-		velocity_ = {0, 0, -0.004f}; // 低速
+		velocity_ = {0, 0, -0.005f}; // 低速
 		break;
 
 	case EnemyType::kZigzag:
@@ -56,7 +56,7 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 		kMaxHp /= 2;
 		worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
 		collisionRadius_ = 1.0f;
-		velocity_ = {0, 0, -0.08f};
+		velocity_ = {0, 0, -0.10f};
 		fireInterval_ = 20; // 連射
 		break;
 
@@ -64,30 +64,17 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 		// 左右に大きく波打つので狙いにくい
 		worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
 		collisionRadius_ = 1.0f;
-		velocity_ = {0, 0, -0.05f};
+		velocity_ = {0, 0, -0.06f};
 		moveAmplitude_ = 6.0f; // 左右の振れ幅
 		moveSpeed_ = 0.04f;    // 波の速さ
 		fireInterval_ = 70;
-		break;
-
-	case EnemyType::kRush:
-		// 紙耐久のかわりに速い、溜めてから突っ込んでくる
-		kMaxHp = kMaxHp / 3;
-		if (kMaxHp < 1) {
-			kMaxHp = 1;
-		}
-		worldTransform_.scale_ = {0.8f, 0.8f, 0.8f};
-		collisionRadius_ = 0.8f;
-		velocity_ = {0, 0, -0.02f}; // 溜め中はゆっくり
-		rushChargeTime_ = 120;       // 溜め時間（フレーム）2秒に延長
-		rushSpeed_ = 0.25f;          // 突進速度を少し緩め
 		break;
 
 	case EnemyType::kHover:
 		// 前に出て止まり、左右に往復しながら撃ち続ける
 		worldTransform_.scale_ = {1.2f, 1.2f, 1.2f};
 		collisionRadius_ = 1.2f;
-		velocity_ = {0, 0, -0.06f};
+		velocity_ = {0, 0, -0.07f};
 		advanceTime_ = 120;    // 前進する時間（フレーム）
 		moveAmplitude_ = 6.0f; // 往復の幅
 		moveSpeed_ = 0.03f;
@@ -98,7 +85,7 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 		// 上空から急降下して、途中で水平飛行に切り替える
 		worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
 		collisionRadius_ = 1.0f;
-		velocity_ = {0, 0, -0.04f};
+		velocity_ = {0, 0, -0.05f};
 		diveTargetY_ = position.y - 10.0f; // スポーン位置から10だけ降りる
 		diveSpeed_ = 0.10f;
 		fireInterval_ = 65;
@@ -109,7 +96,7 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 		kMaxHp += 2;
 		worldTransform_.scale_ = {1.1f, 1.1f, 1.1f};
 		collisionRadius_ = 1.1f;
-		velocity_ = {0, 0, -0.03f};
+		velocity_ = {0, 0, -0.04f};
 		moveAmplitude_ = 7.0f; // プレイヤーからの周回半径
 		moveSpeed_ = 0.025f;
 		fireInterval_ = 70;
@@ -211,10 +198,6 @@ void Enemy::UpdateApproach() {
 		UpdateMoveWave();
 		break;
 
-	case EnemyType::kRush:
-		UpdateMoveRush();
-		break;
-
 	case EnemyType::kHover:
 		UpdateMoveHover();
 		break;
@@ -236,7 +219,7 @@ void Enemy::UpdateApproach() {
 	}
 
 	// 射撃処理（タンクと突進タイプは弾を撃たない）
-	if (enemyType_ != EnemyType::kTank && enemyType_ != EnemyType::kRush&&!isWeakened_) {
+	if (enemyType_ != EnemyType::kTank && !isWeakened_) {
 		--kShotTimer;
 		if (kShotTimer < 0) {
 			EnemyShotUpdate();
@@ -273,27 +256,6 @@ void Enemy::UpdateMoveWave() {
 
 	// 進行方向に合わせて機体を傾けると波打ってる感が出る
 	worldTransform_.rotation_.z = -cosf(moveTimer_) * 0.5f;
-}
-
-// 溜めのあとプレイヤーめがけて高速で突進する
-void Enemy::UpdateMoveRush() {
-
-	// 突進を始めたあとは velocity_ をそのまま使うので何もしない
-	if (isRushing_) {
-		return;
-	}
-
-	// 溜め中：小刻みに震わせて突進の予兆を出す
-	--rushChargeTime_;
-	moveTimer_ += 0.8f;
-	worldTransform_.translation_.x += sinf(moveTimer_) * 0.05f;
-
-	if (rushChargeTime_ <= 0 && player_) {
-		// この瞬間のプレイヤー方向へ velocity_ を固定して突進開始
-		Vector3 direction = Normalize(player_->GetWorldPosition() - GetWorldPosition());
-		velocity_ = direction * rushSpeed_;
-		isRushing_ = true;
-	}
 }
 
 // 手前まで進んだら停止して、左右に往復する

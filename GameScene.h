@@ -64,7 +64,7 @@ public:
 	KamataEngine::Model* playerBulletModel_ = nullptr;
 
 	// タイプごとのモデル（未設定ならenemyModel_が使われる）
-	static const int kEnemyTypeCount = 9;
+	static const int kEnemyTypeCount = 8;
 	KamataEngine::Model* enemyTypeModels_[kEnemyTypeCount] = {};
 
 	KamataEngine::Model* skyDomeModel_ = nullptr;

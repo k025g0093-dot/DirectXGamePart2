@@ -9,7 +9,6 @@ enum class EnemyType {
 	kTank,   // タンク：大きくて硬い、弾は撃たない
 	kZigzag, // 円を描きながら進む
 	kWave,   // 左右に大きく波打ちながら前進する
-	kRush,   // 溜めのあとプレイヤーめがけて高速で突進する
 	kHover,  // 手前まで進んだら停止して、左右に往復しながら撃ち続ける
 	kDive,   // 上空から急降下して、途中で水平飛行に切り替える
 	kOrbit,  // プレイヤーの周りを回り込むように動く
@@ -108,11 +107,6 @@ private: // 追加した移動パターンで使うパラメータ
 	// 移動パターンの進行速度（大きいほど速く揺れる）
 	float moveSpeed_ = 0.05f;
 
-	// kRush：突進までの溜め時間と突進速度
-	int32_t rushChargeTime_ = 60;
-	float rushSpeed_ = 0.35f;
-	bool isRushing_ = false;
-
 	// kHover：停止するまで前進し続けるフレーム数
 	int32_t advanceTime_ = 120;
 
@@ -141,7 +135,6 @@ private:
 	// タイプごとの移動パターン
 	void UpdateMoveZigzag();
 	void UpdateMoveWave();
-	void UpdateMoveRush();
 	void UpdateMoveHover();
 	void UpdateMoveDive();
 	void UpdateMoveOrbit();
