@@ -42,9 +42,11 @@ void GameScene::Initialize() {
 	planeModel_ = Model::CreateFromOBJ("ground", true);
 	shieldEnemyModel_ = Model::CreateFromOBJ("shieldEnemy", true);
 	allyModel_ = Model::CreateFromOBJ("ally", true);
+	bossEnemyModel_ = Model::CreateFromOBJ("BossEnemy", true);
 
 	// タイプ別モデルの割り当て（今後追加分岐用）
 	SetEnemyTypeModel(EnemyType::kTank, shieldEnemyModel_);
+	SetEnemyTypeModel(EnemyType::kBoss, bossEnemyModel_);
 
 #pragma region カメラコントローラーの設定
 	railCameraController_->Initialize();
@@ -366,6 +368,7 @@ GameScene::~GameScene() {
 	delete planeModel_;
 	delete shieldEnemyModel_;
 	delete allyModel_;
+	delete bossEnemyModel_;
 	delete model3DReticle_;
 	delete deathParticleModel_;
 	delete debugCamera_;

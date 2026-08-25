@@ -71,6 +71,7 @@ public:
 	KamataEngine::Model* planeModel_ = nullptr;
 	KamataEngine::Model* shieldEnemyModel_ = nullptr;
 	KamataEngine::Model* allyModel_ = nullptr;
+	KamataEngine::Model* bossEnemyModel_ = nullptr;
 
 	// 敵のポップデータ
 	std::stringstream enemyPopCommands;
