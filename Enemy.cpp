@@ -107,7 +107,7 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 		kMaxHp *= 10;
 		worldTransform_.scale_ = {3.0f, 3.0f, 3.0f};
 		collisionRadius_ = 3.0f;
-		velocity_ = {0, 0, 0.016f}; // プレイヤーと同じ方向（+Z）に前進
+		velocity_ = {0, 0, 0.024f}; // プレイヤーと同じ速度（+Z）に前進
 		moveAmplitude_ = 10.0f;
 		moveSpeed_ = 0.015f;
 		fireInterval_ = 50;

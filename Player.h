@@ -121,7 +121,7 @@ private:
 	KamataEngine::ObjectColor objectColor_;
 
 	// プレイヤーのHP
-	int32_t hp_ = 5;
+	int32_t hp_ = 10;
 	// プレイヤーのHPの最大値
 	static const int32_t kMaxHp = 5;
 	// 発射クールダウン

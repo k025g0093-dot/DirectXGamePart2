@@ -91,12 +91,13 @@ void GameScene::Initialize() {
 	// HP表示
 	uiTexture_ = TextureManager::Load("white1x1.png");
 	hpBarBg_ = Sprite::Create(uiTexture_, {0, 0});
-	hpBarBg_->SetSize(Vector2(204, 24));
+	hpBarBg_->SetSize(Vector2(404, 24));
 	hpBarBg_->SetPosition(Vector2(20, 20));
 	hpBarBg_->SetColor(Vector4(0.2f, 0.2f, 0.2f, 0.8f));
 
 	hpBarFill_ = Sprite::Create(uiTexture_, {0, 0});
 	hpBarFill_->SetSize(Vector2(200, 20));
+	hpBarFill_->SetPosition(Vector2(22, 22));
 	hpBarFill_->SetPosition(Vector2(22, 22));
 	hpBarFill_->SetColor(Vector4(0.2f, 0.9f, 0.2f, 1.0f));
 
