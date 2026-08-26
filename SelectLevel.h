@@ -27,6 +27,15 @@ public:
 private:
 	DifficultyLevel selectedDifficulty_ = DifficultyLevel::kNormal;
 
+	// ===== 背景の3D（天球と地面）=====
+	KamataEngine::Camera camera_;
+	SkyDome* skyDome_ = nullptr;
+	Plane* plane_ = nullptr;
+	KamataEngine::Model* skyDomeModel_ = nullptr;
+	KamataEngine::Model* groundModel_ = nullptr;
+	// 背景をゆっくり流すための回転角
+	float skyRotation_ = 0.0f;
+
 	// 難易度選択用スプライト
 	uint32_t sampleTexture_ = 0;
 	uint32_t whiteTexture_ = 0;
@@ -49,7 +58,7 @@ private:
 	KamataEngine::Sprite* descBg_ = nullptr;
 	KamataEngine::Sprite* descTextEasy_ = nullptr;
 	KamataEngine::Sprite* descTextNormal_ = nullptr;
-	KamataEngine::	Sprite* descTextHard_ = nullptr;
+	KamataEngine::Sprite* descTextHard_ = nullptr;
 	KamataEngine::Sprite* descTextTutorial_ = nullptr;
 
 	// チュートリアルパネル

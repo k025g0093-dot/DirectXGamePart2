@@ -411,6 +411,12 @@ void GameScene::CheckAllCollisions() {
 	// プレイヤーと敵本体の当たり判定（突進タイプの体当たり用）
 	posA = player_->GetWorldPosition();
 	for (Enemy* enemy : enemies_) {
+
+		// 味方化イージング中はプレイヤーへ寄っていくだけなので、当たり判定を持たせない
+		if (enemy->IsConverting()) {
+			continue;
+		}
+
 		posB = enemy->GetWorldPosition();
 
 		Vector3 diff = posA - posB;

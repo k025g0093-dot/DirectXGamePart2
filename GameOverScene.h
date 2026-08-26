@@ -1,6 +1,8 @@
 #pragma once
 #include "Fade.h"
 #include "KamataEngine.h"
+#include "SkyDome.h"
+#include "Plane.h"
 #include <vector>
 
 
@@ -41,9 +43,15 @@ private:
 	// ★これを追加
 	KamataEngine::ObjectColor objectColor_;
 
-	// 「PRESS START」表示用スプライト
+	// 「BACK TO TITLE」表示用スプライト
 	KamataEngine::Sprite* pressStartSprite_ = nullptr;
 	uint32_t pressStartTexture_ = 0;
 	float blinkTimer_ = 0.0f;
 	bool showPressStart_ = true;
+
+	// 天球と地面
+	SkyDome* skyDome_ = nullptr;
+	KamataEngine::Model* skyDomeModel_ = nullptr;
+	Plane* plane_ = nullptr;
+	KamataEngine::Model* planeModel_ = nullptr;
 };

@@ -11,12 +11,32 @@ void SelectLevel::Initialize() {
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 
 	whiteTexture_ = TextureManager::Load("white1x1.png");
-	sampleTexture_ = TextureManager::Load("sample.png");
+	sampleTexture_ = TextureManager::Load("startUI.png");
 
-	// タイトル（sample.pngを仮で使用）
+#pragma region 背景の3D（天球と地面）
+
+	camera_.Initialize();
+	// 天球は原点にあるので、その内側にカメラを置く
+	camera_.translation_ = {0.0f, 0.0f, 0.0f};
+	// 少しだけ下を向けて、地面が画面下側に見えるようにする
+	camera_.rotation_ = {0.18f, 0.0f, 0.0f};
+	camera_.UpdateMatrix();
+
+	skyDomeModel_ = Model::CreateFromOBJ("skydome", true);
+	groundModel_ = Model::CreateFromOBJ("ground", true);
+
+	skyDome_ = new SkyDome();
+	skyDome_->Initialize(skyDomeModel_);
+
+	plane_ = new Plane();
+	plane_->Initialize(groundModel_);
+
+#pragma endregion
+
+	// タイトル画像
 	titleSprite_ = Sprite::Create(sampleTexture_, {0, 0});
-	titleSprite_->SetSize(Vector2(400, 100));
-	titleSprite_->SetPosition(Vector2(440.0f, 60.0f));
+	titleSprite_->SetSize(Vector2(1280, 720));
+	titleSprite_->SetPosition(Vector2(0.0f, 0.0f));
 
 	// 難易度ボタン（4つ並べる：Easy, Normal, Hard, Tutorial）中央寄せ
 	float baseX = 280.0f;
@@ -125,6 +145,18 @@ void SelectLevel::Initialize() {
 void SelectLevel::Update() {
 
 	fade_->Update();
+
+#pragma region 背景の3Dを更新
+
+	// カメラをゆっくり回して、背景が流れているように見せる
+	skyRotation_ += 0.0015f;
+	camera_.rotation_.y = skyRotation_;
+	camera_.UpdateMatrix();
+
+	skyDome_->Update();
+	plane_->Update();
+
+#pragma endregion
 
 	switch (gamePhase_) {
 	case GamePhase::kFadeIn:
@@ -238,6 +270,15 @@ void SelectLevel::Update() {
 
 void SelectLevel::Draw() {
 
+	// ===== 先に3Dの背景を描く（スプライトより奥に来る）=====
+	Model::PreDraw();
+
+	plane_->Draw(&camera_);
+	skyDome_->Draw(&camera_);
+
+	Model::PostDraw();
+
+	// ===== その上にUIを重ねる =====
 	Sprite::PreDraw();
 
 	titleSprite_->Draw();
@@ -279,6 +320,13 @@ void SelectLevel::Draw() {
 
 SelectLevel::~SelectLevel() {
 	delete fade_;
+
+	// 背景の3D
+	delete skyDome_;
+	delete plane_;
+	delete skyDomeModel_;
+	delete groundModel_;
+
 	delete titleSprite_;
 	delete btnEasy_;
 	delete btnNormal_;

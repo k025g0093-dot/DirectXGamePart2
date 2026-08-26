@@ -18,11 +18,11 @@ void GameOverScene::Initialize() {
 	camera_.Initialize();
 	objectColor_.Initialize();
 
-	// 「PRESS START」スプライト
-	pressStartTexture_ = TextureManager::Load("white1x1.png");
+	// 「BACK TO TITLE」スプライト
+	pressStartTexture_ = TextureManager::Load("backTITLEUI.png");
 	pressStartSprite_ = Sprite::Create(pressStartTexture_, {0, 0});
-	pressStartSprite_->SetPosition(Vector2(440.0f, 600.0f));
-	pressStartSprite_->SetSize(Vector2(400.0f, 40.0f));
+	pressStartSprite_->SetPosition(Vector2(0.0f, 0.0f));
+	pressStartSprite_->SetSize(Vector2(1280.0f, 720.0f));
 	pressStartSprite_->SetColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 
 	// 1. キャラを正面に向ける設定
@@ -33,6 +33,14 @@ void GameOverScene::Initialize() {
 	// 2. カメラの初期位置（キャラの正面に配置）
 	// zをマイナスにすると手前になります
 	camera_.translation_ = {0.0f, 0.5f, -15.0f};
+
+	// 天球と地面
+	skyDomeModel_ = Model::CreateFromOBJ("skydome", true);
+	planeModel_ = Model::CreateFromOBJ("ground", true);
+	skyDome_ = new SkyDome();
+	skyDome_->Initialize(skyDomeModel_);
+	plane_ = new Plane();
+	plane_->Initialize(planeModel_);
 }
 
 void GameOverScene::Update() {
@@ -84,6 +92,9 @@ void GameOverScene::Update() {
 	// 座標などを変えた後は、UpdateMatrix を呼ばないと画面に反映されません
 	camera_.UpdateMatrix();
 
+	skyDome_->Update();
+	plane_->Update();
+
 	// 「PRESS START」点滅演出
 	if (gamePhase_ == GamePhase::kPlay && showPressStart_) {
 		blinkTimer_ += 0.05f;
@@ -95,13 +106,14 @@ void GameOverScene::Update() {
 void GameOverScene::Draw() {
 
 	Model::PreDraw();
-	// 2. 描画（引数は 3つ）
+	plane_->Draw(&camera_);
+	skyDome_->Draw(&camera_);
 	if (modelTitle_) {
 		modelTitle_->Draw(worldTransform_, camera_, &objectColor_);
 	}
 	fade_->Draw();
 
-	// 3. 3Dモデル描画後の終了処理
+	// 3Dモデル描画後の終了処理
 	Model::PostDraw();
 
 	// 2Dスプライト描画
@@ -115,4 +127,8 @@ void GameOverScene::Draw() {
 GameOverScene::~GameOverScene() {
 	delete fade_;
 	delete pressStartSprite_;
+	delete skyDome_;
+	delete plane_;
+	delete skyDomeModel_;
+	delete planeModel_;
 }

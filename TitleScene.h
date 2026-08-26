@@ -1,6 +1,8 @@
 #pragma once
 #include "Fade.h"
 #include "KamataEngine.h"
+#include "SkyDome.h"
+#include "Plane.h"
 #include <vector>
 
 
@@ -35,15 +37,17 @@ private:
 	// ビュープロジェクション（カメラ）
 	KamataEngine::Camera camera_;
 
-	// タイトル用のモデルなどが必要な場合はここに追加
+	// タイトル用のモデル
 	KamataEngine::Model* modelTitle_ = nullptr;
-
-	// ★これを追加
 	KamataEngine::ObjectColor objectColor_;
 
-	// 「PRESS START」表示用スプライト
-	KamataEngine::Sprite* pressStartSprite_ = nullptr;
-	uint32_t pressStartTexture_ = 0;
-	float blinkTimer_ = 0.0f;
-	bool showPressStart_ = true;
+	// タイトル画像
+	KamataEngine::Sprite* titleImageSprite_ = nullptr;
+	uint32_t titleImageTexture_ = 0;
+
+	// 天球と地面
+	SkyDome* skyDome_ = nullptr;
+	KamataEngine::Model* skyDomeModel_ = nullptr;
+	Plane* plane_ = nullptr;
+	KamataEngine::Model* planeModel_ = nullptr;
 };
