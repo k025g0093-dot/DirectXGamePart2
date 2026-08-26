@@ -72,7 +72,7 @@ target_ = nullptr;
 
 void LockOn::Draw() { 
 	if (isLockedOn_) {
-
+		lockOnSprite_->SetColor(Vector4(1, 1, 1, alpha_));
 		lockOnSprite_->Draw();
 	}
 }

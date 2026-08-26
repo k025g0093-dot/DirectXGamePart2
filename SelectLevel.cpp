@@ -23,25 +23,25 @@ void SelectLevel::Initialize() {
 	float baseY = 260.0f;
 	float spacing = 180.0f;
 
+	btnTutorial_ = Sprite::Create(whiteTexture_, {0, 0});
+	btnTutorial_->SetSize(Vector2(150, 60));
+	btnTutorial_->SetPosition(Vector2(baseX, baseY));
+	btnTutorial_->SetColor(Vector4(0.6f, 0.6f, 0.2f, 1.0f)); // 黄
+
 	btnEasy_ = Sprite::Create(whiteTexture_, {0, 0});
 	btnEasy_->SetSize(Vector2(150, 60));
-	btnEasy_->SetPosition(Vector2(baseX, baseY));
+	btnEasy_->SetPosition(Vector2(baseX + spacing, baseY));
 	btnEasy_->SetColor(Vector4(0.3f, 0.7f, 0.3f, 1.0f)); // 緑
 
 	btnNormal_ = Sprite::Create(whiteTexture_, {0, 0});
 	btnNormal_->SetSize(Vector2(150, 60));
-	btnNormal_->SetPosition(Vector2(baseX + spacing, baseY));
+	btnNormal_->SetPosition(Vector2(baseX + spacing * 2, baseY));
 	btnNormal_->SetColor(Vector4(0.3f, 0.3f, 0.8f, 1.0f)); // 青
 
 	btnHard_ = Sprite::Create(whiteTexture_, {0, 0});
 	btnHard_->SetSize(Vector2(150, 60));
-	btnHard_->SetPosition(Vector2(baseX + spacing * 2, baseY));
+	btnHard_->SetPosition(Vector2(baseX + spacing * 3, baseY));
 	btnHard_->SetColor(Vector4(0.8f, 0.2f, 0.2f, 1.0f)); // 赤
-
-	btnTutorial_ = Sprite::Create(whiteTexture_, {0, 0});
-	btnTutorial_->SetSize(Vector2(150, 60));
-	btnTutorial_->SetPosition(Vector2(baseX + spacing * 3, baseY));
-	btnTutorial_->SetColor(Vector4(0.6f, 0.6f, 0.2f, 1.0f)); // 黄
 
 	// 選択カーソル
 	cursor_ = Sprite::Create(whiteTexture_, {0, 0});
@@ -192,14 +192,14 @@ void SelectLevel::Update() {
 		prevConfirm_ = curConfirm;
 
 		if (confirm) {
-			if (selectIndex_ == 3) {
+			if (selectIndex_ == 0) {
 				// チュートリアルを開く
 				showTutorial_ = true;
 			} else {
 				switch (selectIndex_) {
-				case 0: selectedDifficulty_ = DifficultyLevel::kEasy; break;
-				case 1: selectedDifficulty_ = DifficultyLevel::kNormal; break;
-				case 2: selectedDifficulty_ = DifficultyLevel::kHard; break;
+				case 1: selectedDifficulty_ = DifficultyLevel::kEasy; break;
+				case 2: selectedDifficulty_ = DifficultyLevel::kNormal; break;
+				case 3: selectedDifficulty_ = DifficultyLevel::kHard; break;
 				}
 				fade_->Start(Fade::Status::FadeOut, 1.0f);
 				gamePhase_ = GamePhase::kFadeOut;
@@ -251,10 +251,10 @@ void SelectLevel::Draw() {
 	if (!showTutorial_) {
 		descBg_->Draw();
 		switch (selectIndex_) {
-		case 0: descTextEasy_->Draw(); break;
-		case 1: descTextNormal_->Draw(); break;
-		case 2: descTextHard_->Draw(); break;
-		case 3: descTextTutorial_->Draw(); break;
+		case 0: descTextTutorial_->Draw(); break;
+		case 1: descTextEasy_->Draw(); break;
+		case 2: descTextNormal_->Draw(); break;
+		case 3: descTextHard_->Draw(); break;
 		}
 	}
 

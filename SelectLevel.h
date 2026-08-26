@@ -39,7 +39,7 @@ private:
 
 	// 選択カーソル
 	KamataEngine::Sprite* cursor_ = nullptr;
-	int32_t selectIndex_ = 1; // 0=Easy, 1=Normal, 2=Hard, 3=Tutorial
+	int32_t selectIndex_ = 0; // 0=Tutorial, 1=Easy, 2=Normal, 3=Hard
 	bool prevDpadLeft_ = false;
 	bool prevDpadRight_ = false;
 	bool prevConfirm_ = false;

@@ -15,6 +15,9 @@ public:
 	Enemy* GetTarget() const { return target_; }
 
 	bool isLockedOn_ = false;
+	float alpha_ = 0.60f;
+
+	void SetAlpha(float alpha) { alpha_ = alpha; }
 
 private:
 	KamataEngine::Sprite* lockOnSprite_ = nullptr;
