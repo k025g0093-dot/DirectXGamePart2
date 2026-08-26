@@ -32,16 +32,11 @@ public:
 	Fade* fade_ = nullptr;
 
 private:
-	// ワールドトランスフォーム
-	KamataEngine::WorldTransform worldTransform_;
-	// ビュープロジェクション（カメラ）
-	KamataEngine::Camera camera_;
+	// ゲームタイトルのロゴ画像
+	KamataEngine::Sprite* titleLogoSprite_ = nullptr;
+	uint32_t titleLogoTexture_ = 0;
 
-	// タイトル用のモデル
-	KamataEngine::Model* modelTitle_ = nullptr;
-	KamataEngine::ObjectColor objectColor_;
-
-	// タイトル画像
+	// 「Ⓐ/SPACE start」の案内画像
 	KamataEngine::Sprite* titleImageSprite_ = nullptr;
 	uint32_t titleImageTexture_ = 0;
 
@@ -50,4 +45,8 @@ private:
 	KamataEngine::Model* skyDomeModel_ = nullptr;
 	Plane* plane_ = nullptr;
 	KamataEngine::Model* planeModel_ = nullptr;
+
+	// 背景専用のカメラ。これを回して天球を流す
+	KamataEngine::Camera bgCamera_;
+	float skyRotation_ = 0.0f;
 };

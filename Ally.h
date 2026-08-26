@@ -58,6 +58,9 @@ private:
 	static const int32_t kSpawnDuration = 20;
 	float targetScale_ = 1.0f;
 
+	// 機体の不透明度。1.0で不透明、下げるほど背景が透ける
+	static constexpr float kAlpha = 0.5f;
+
 private: // 追従の調整用（数値を下げるほど動きが落ち着く）
 	// 定位置へ寄っていく速さ
 	float followSpeed_ = 0.05f;

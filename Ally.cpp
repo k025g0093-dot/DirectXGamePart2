@@ -22,7 +22,8 @@ void Ally::Initialize(
 	worldTransform_.translation_ = position;
 	worldTransform_.rotation_ = {0.0f, 6.3f, 0.0f};
 	objectColor_.Initialize();
-	objectColor_.SetColor({1.0f, 1.0f, 1.0f, 1.0f});
+	// 仲間は最大15機まで増えるので、半透明にして画面の占有感を下げる
+	objectColor_.SetColor({1.0f, 1.0f, 1.0f, kAlpha});
 
 	// 出現アニメーション：スケール0から始める
 	worldTransform_.scale_ = {0.0f, 0.0f, 0.0f};
@@ -61,7 +62,7 @@ void Ally::Updata() {
 	UpdateWorldTransform(worldTransform_);
 }
 
-void Ally::Draw() { model_->Draw(worldTransform_, *camera_); }
+void Ally::Draw() { model_->Draw(worldTransform_, *camera_, &objectColor_); }
 
 // 攻撃
 void Ally::Attack() {

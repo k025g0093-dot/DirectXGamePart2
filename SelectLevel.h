@@ -40,6 +40,13 @@ private:
 	uint32_t sampleTexture_ = 0;
 	uint32_t whiteTexture_ = 0;
 
+	// 難易度説明のUI画像（1280x720の全画面オーバーレイ）
+	uint32_t easyTexture_ = 0;
+	uint32_t normalTexture_ = 0;
+	uint32_t hardTexture_ = 0;
+	// チュートリアル画面（タイトル・本文・戻る案内まで1枚に入った画像）
+	uint32_t tutorialTexture_ = 0;
+
 	// 各難易度ボタン
 	KamataEngine::Sprite* btnEasy_ = nullptr;
 	KamataEngine::Sprite* btnNormal_ = nullptr;
@@ -63,14 +70,10 @@ private:
 
 	// チュートリアルパネル
 	bool showTutorial_ = false;
+	// 背景を暗くするオーバーレイ
 	KamataEngine::Sprite* tutorialBg_ = nullptr;
-	KamataEngine::Sprite* tutorialTitle_ = nullptr;
-	KamataEngine::Sprite* tutorialText1_ = nullptr;
-	KamataEngine::Sprite* tutorialText2_ = nullptr;
-	KamataEngine::Sprite* tutorialText3_ = nullptr;
-	KamataEngine::Sprite* tutorialText4_ = nullptr;
-	KamataEngine::Sprite* tutorialText5_ = nullptr;
-	KamataEngine::Sprite* tutorialBack_ = nullptr;
+	// 説明の中身。文字は画像に描かれているので1枚で足りる
+	KamataEngine::Sprite* tutorialImage_ = nullptr;
 
 	// タイトルテクスチャ
 	KamataEngine::Sprite* titleSprite_ = nullptr;

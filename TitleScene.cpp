@@ -11,14 +11,15 @@ void TitleScene::Initialize() {
 	fade_->Initialize();
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 
-	modelTitle_ = Model::CreateFromOBJ("titleFont", true);
-	assert(modelTitle_);
+	// タイトルは3Dモデルをやめて画像で表示する
 
-	worldTransform_.Initialize();
-	camera_.Initialize();
-	objectColor_.Initialize();
+	// ゲームタイトルのロゴ
+	titleLogoTexture_ = TextureManager::Load("TITLE.png");
+	titleLogoSprite_ = Sprite::Create(titleLogoTexture_, {0, 0});
+	titleLogoSprite_->SetPosition(Vector2(0.0f, 0.0f));
+	titleLogoSprite_->SetSize(Vector2(1280.0f, 720.0f));
 
-	// タイトル画像
+	// 「Ⓐ/SPACE start」の案内
 	titleImageTexture_ = TextureManager::Load("startUI.png");
 	titleImageSprite_ = Sprite::Create(titleImageTexture_, {0, 0});
 	titleImageSprite_->SetPosition(Vector2(0.0f, 0.0f));
@@ -31,6 +32,12 @@ void TitleScene::Initialize() {
 	skyDome_->Initialize(skyDomeModel_);
 	plane_ = new Plane();
 	plane_->Initialize(planeModel_);
+
+	// 背景用のカメラ。天球の内側に置いて、少し下を向ける
+	bgCamera_.Initialize();
+	bgCamera_.translation_ = {0.0f, 0.0f, 0.0f};
+	bgCamera_.rotation_ = {0.18f, 0.0f, 0.0f};
+	bgCamera_.UpdateMatrix();
 }
 
 void TitleScene::Update() {
@@ -70,12 +77,10 @@ void TitleScene::Update() {
 		break;
 	}
 
-	// キャラの行列更新
-	worldTransform_.rotation_.y -= 0.1f;
-	worldTransform_.matWorld_ = MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
-	worldTransform_.TransferMatrix();
-
-	camera_.UpdateMatrix();
+	// 背景カメラをゆっくり回して、天球が流れているように見せる
+	skyRotation_ += 0.0015f;
+	bgCamera_.rotation_.y = skyRotation_;
+	bgCamera_.UpdateMatrix();
 
 	skyDome_->Update();
 	plane_->Update();
@@ -83,15 +88,15 @@ void TitleScene::Update() {
 
 void TitleScene::Draw() {
 
+	// 3Dは回転する背景（天球と地面）だけ
 	Model::PreDraw();
-	plane_->Draw(&camera_);
-	skyDome_->Draw(&camera_);
-	if (modelTitle_) {
-		modelTitle_->Draw(worldTransform_, camera_, &objectColor_);
-	}
+	plane_->Draw(&bgCamera_);
+	skyDome_->Draw(&bgCamera_);
 	Model::PostDraw();
 
 	Sprite::PreDraw();
+	// タイトルロゴ → 操作案内の順に重ねる
+	titleLogoSprite_->Draw();
 	titleImageSprite_->Draw();
 	Sprite::PostDraw();
 
@@ -100,6 +105,7 @@ void TitleScene::Draw() {
 
 TitleScene::~TitleScene() {
 	delete fade_;
+	delete titleLogoSprite_;
 	delete titleImageSprite_;
 	delete skyDome_;
 	delete plane_;

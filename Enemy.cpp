@@ -107,7 +107,9 @@ void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera,
 		kMaxHp *= 10;
 		worldTransform_.scale_ = {3.0f, 3.0f, 3.0f};
 		collisionRadius_ = 3.0f;
-		velocity_ = {0, 0, 0.024f}; // プレイヤーと同じ速度（+Z）に前進
+		// レールカメラ（0.016f）より少しだけ遅くして、じわじわ間合いが詰まるようにする
+		// これより速いとボスが逃げ続けて永遠に近づかない
+		velocity_ = {0, 0, 0.014f};
 		moveAmplitude_ = 10.0f;
 		moveSpeed_ = 0.015f;
 		fireInterval_ = 50;
@@ -162,6 +164,31 @@ void Enemy::Update() {
 		}
 
 		UpdateWorldTransform(worldTransform_);
+
+		// 画面外へ抜けたら一定時間後に退場させる
+		UpdateOffScreen();
+}
+
+// カメラより後ろへ抜けた敵を、一定時間後に退場扱いにする
+// （撃ち漏らした敵が残り続けてクリア条件を満たせなくなるのを防ぐ）
+void Enemy::UpdateOffScreen() {
+
+	if (!camera_) {
+		return;
+	}
+
+	// カメラの少し後ろまで下がったら「画面外」とみなす
+	float limitZ = camera_->translation_.z - kOffScreenMargin;
+
+	if (worldTransform_.translation_.z < limitZ) {
+		offScreenTimer_++;
+		if (offScreenTimer_ >= kOffScreenLife) {
+			isExpired_ = true;
+		}
+	} else {
+		// 戻ってきたら数え直す
+		offScreenTimer_ = 0;
+	}
 }
 
 void Enemy::Draw() {

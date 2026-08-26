@@ -13,6 +13,12 @@ void SelectLevel::Initialize() {
 	whiteTexture_ = TextureManager::Load("white1x1.png");
 	sampleTexture_ = TextureManager::Load("startUI.png");
 
+	// 難易度説明のUI画像
+	easyTexture_ = TextureManager::Load("EZUI.png");
+	normalTexture_ = TextureManager::Load("normalUI.png");
+	hardTexture_ = TextureManager::Load("hardUi.png");
+	tutorialTexture_ = TextureManager::Load("tutorial.png");
+
 #pragma region 背景の3D（天球と地面）
 
 	camera_.Initialize();
@@ -68,27 +74,27 @@ void SelectLevel::Initialize() {
 	cursor_->SetSize(Vector2(160, 70));
 	cursor_->SetColor(Vector4(1, 1, 1, 0.5f));
 
-	// 難易度説明パネル（ボタンの下に表示）
+	// 難易度説明パネルの背景（画像が無いチュートリアル用にだけ使う）
 	descBg_ = Sprite::Create(whiteTexture_, {0, 0});
 	descBg_->SetSize(Vector2(700, 80));
 	descBg_->SetPosition(Vector2(290.0f, 340.0f));
 	descBg_->SetColor(Vector4(0.1f, 0.1f, 0.1f, 0.8f));
 
-	descTextEasy_ = Sprite::Create(whiteTexture_, {0, 0});
-	descTextEasy_->SetSize(Vector2(680, 60));
-	descTextEasy_->SetPosition(Vector2(300, 350));
-	descTextEasy_->SetColor(Vector4(0.3f, 0.7f, 0.3f, 1.0f)); // 緑テキスト背景
+	// 難易度の説明は1280x720の全画面オーバーレイ画像をそのまま貼る
+	descTextEasy_ = Sprite::Create(easyTexture_, {0, 0});
+	descTextEasy_->SetSize(Vector2(1280, 720));
+	descTextEasy_->SetPosition(Vector2(0.0f, 0.0f));
 
-	descTextNormal_ = Sprite::Create(whiteTexture_, {0, 0});
-	descTextNormal_->SetSize(Vector2(680, 60));
-	descTextNormal_->SetPosition(Vector2(300, 350));
-	descTextNormal_->SetColor(Vector4(0.3f, 0.3f, 0.8f, 1.0f)); // 青テキスト背景
+	descTextNormal_ = Sprite::Create(normalTexture_, {0, 0});
+	descTextNormal_->SetSize(Vector2(1280, 720));
+	descTextNormal_->SetPosition(Vector2(0.0f, 0.0f));
 
-	descTextHard_ = Sprite::Create(whiteTexture_, {0, 0});
-	descTextHard_->SetSize(Vector2(680, 60));
-	descTextHard_->SetPosition(Vector2(300, 350));
-	descTextHard_->SetColor(Vector4(0.8f, 0.2f, 0.2f, 1.0f)); // 赤テキスト背景
+	descTextHard_ = Sprite::Create(hardTexture_, {0, 0});
+	descTextHard_->SetSize(Vector2(1280, 720));
+	// ハードの画像だけ文字が左に寄っているので、少し右にずらして他と揃える
+	descTextHard_->SetPosition(Vector2(40.0f, 0.0f));
 
+	// チュートリアルはまだ画像が無いので、これまで通り白い箱で表示
 	descTextTutorial_ = Sprite::Create(whiteTexture_, {0, 0});
 	descTextTutorial_->SetSize(Vector2(680, 60));
 	descTextTutorial_->SetPosition(Vector2(300, 350));
@@ -100,40 +106,10 @@ void SelectLevel::Initialize() {
 	tutorialBg_->SetPosition(Vector2(0, 0));
 	tutorialBg_->SetColor(Vector4(0.05f, 0.05f, 0.15f, 0.95f)); // 暗い青背景
 
-	tutorialTitle_ = Sprite::Create(whiteTexture_, {0, 0});
-	tutorialTitle_->SetSize(Vector2(500, 50));
-	tutorialTitle_->SetPosition(Vector2(390, 40));
-	tutorialTitle_->SetColor(Vector4(1.0f, 0.8f, 0.2f, 1.0f)); // 金色
-
-	tutorialText1_ = Sprite::Create(whiteTexture_, {0, 0});
-	tutorialText1_->SetSize(Vector2(600, 30));
-	tutorialText1_->SetPosition(Vector2(340, 130));
-	tutorialText1_->SetColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)); // 白
-
-	tutorialText2_ = Sprite::Create(whiteTexture_, {0, 0});
-	tutorialText2_->SetSize(Vector2(600, 30));
-	tutorialText2_->SetPosition(Vector2(340, 180));
-	tutorialText2_->SetColor(Vector4(0.8f, 0.8f, 1.0f, 1.0f)); // 水色
-
-	tutorialText3_ = Sprite::Create(whiteTexture_, {0, 0});
-	tutorialText3_->SetSize(Vector2(600, 30));
-	tutorialText3_->SetPosition(Vector2(340, 230));
-	tutorialText3_->SetColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)); // 白
-
-	tutorialText4_ = Sprite::Create(whiteTexture_, {0, 0});
-	tutorialText4_->SetSize(Vector2(600, 30));
-	tutorialText4_->SetPosition(Vector2(340, 280));
-	tutorialText4_->SetColor(Vector4(0.8f, 1.0f, 0.8f, 1.0f)); // 薄緑
-
-	tutorialText5_ = Sprite::Create(whiteTexture_, {0, 0});
-	tutorialText5_->SetSize(Vector2(600, 30));
-	tutorialText5_->SetPosition(Vector2(340, 330));
-	tutorialText5_->SetColor(Vector4(1.0f, 0.8f, 0.8f, 1.0f)); // 薄赤
-
-	tutorialBack_ = Sprite::Create(whiteTexture_, {0, 0});
-	tutorialBack_->SetSize(Vector2(400, 40));
-	tutorialBack_->SetPosition(Vector2(440, 650));
-	tutorialBack_->SetColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)); // 灰色
+	// 説明の中身は1枚の画像。タイトルも本文も戻る案内も全部この中に入っている
+	tutorialImage_ = Sprite::Create(tutorialTexture_, {0, 0});
+	tutorialImage_->SetSize(Vector2(1280, 720));
+	tutorialImage_->SetPosition(Vector2(0.0f, 0.0f));
 
 	// 「PRESS START」スプライト
 	pressStartSprite_ = Sprite::Create(whiteTexture_, {0, 0});
@@ -254,11 +230,8 @@ void SelectLevel::Update() {
 	float spacing = 180.0f;
 	cursor_->SetPosition(Vector2(baseX + selectIndex_ * spacing - 5, 255));
 
-	// 難易度説明の表示切替
-	descTextEasy_->SetPosition(Vector2(300, 350));
-	descTextNormal_->SetPosition(Vector2(300, 350));
-	descTextHard_->SetPosition(Vector2(300, 350));
-	descTextTutorial_->SetPosition(Vector2(300, 350));
+	// 難易度説明は Draw() で選択中のものだけ描くので、ここでは位置をいじらない
+	// （Easy/Normal/Hard は全画面画像、Tutorial だけ白い箱）
 
 	// 「PRESS START」点滅演出
 	if (gamePhase_ == GamePhase::kPlay && !showTutorial_) {
@@ -288,11 +261,15 @@ void SelectLevel::Draw() {
 	btnTutorial_->Draw();
 	cursor_->Draw();
 
-	// 難易度説明パネル（チュートリアルオーバーレイが開いていない時に表示）
+	// 難易度説明（チュートリアルオーバーレイが開いていない時に表示）
 	if (!showTutorial_) {
-		descBg_->Draw();
 		switch (selectIndex_) {
-		case 0: descTextTutorial_->Draw(); break;
+		case 0:
+			// チュートリアルはまだ画像が無いので、暗い帯 + 白い箱で表示
+			descBg_->Draw();
+			descTextTutorial_->Draw();
+			break;
+		// Easy/Normal/Hard は画像に帯まで描かれているので descBg_ は重ねない
 		case 1: descTextEasy_->Draw(); break;
 		case 2: descTextNormal_->Draw(); break;
 		case 3: descTextHard_->Draw(); break;
@@ -301,14 +278,9 @@ void SelectLevel::Draw() {
 
 	// チュートリアルパネル
 	if (showTutorial_) {
+		// 先に背景を暗くしてから、説明画像を重ねる
 		tutorialBg_->Draw();
-		tutorialTitle_->Draw();
-		tutorialText1_->Draw();
-		tutorialText2_->Draw();
-		tutorialText3_->Draw();
-		tutorialText4_->Draw();
-		tutorialText5_->Draw();
-		tutorialBack_->Draw();
+		tutorialImage_->Draw();
 	} else {
 		pressStartSprite_->Draw();
 	}
@@ -340,11 +312,5 @@ SelectLevel::~SelectLevel() {
 	delete descTextHard_;
 	delete descTextTutorial_;
 	delete tutorialBg_;
-	delete tutorialTitle_;
-	delete tutorialText1_;
-	delete tutorialText2_;
-	delete tutorialText3_;
-	delete tutorialText4_;
-	delete tutorialText5_;
-	delete tutorialBack_;
+	delete tutorialImage_;
 }

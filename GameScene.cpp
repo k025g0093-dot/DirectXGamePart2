@@ -240,6 +240,11 @@ void GameScene::GameUpdate() {
 			delete enemy;
 			return true;
 		}
+		// 画面外へ抜けた敵は、撃破ではないのでエフェクトを出さずに消す
+		if (enemy->IsExpired()) {
+			delete enemy;
+			return true;
+		}
 		return false;
 	});
 
