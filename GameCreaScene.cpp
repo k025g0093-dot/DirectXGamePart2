@@ -31,6 +31,23 @@ void GameCreaScene::Initialize() {
 	camera_.rotation_ = {0.18f, 0.0f, 0.0f};
 	camera_.UpdateMatrix();
 
+	// クリア画面のプレイヤー機体
+	// 背景カメラは回転させるので、機体はぶれない専用カメラで描く
+	modelCamera_.Initialize();
+	modelCamera_.translation_ = {0.0f, 0.0f, 0.0f};
+	modelCamera_.rotation_ = {0.0f, 0.0f, 0.0f};
+	modelCamera_.UpdateMatrix();
+
+	playerModel_ = Model::CreateFromOBJ("player", true);
+	playerTransform_.Initialize();
+	// Yを90度回して真横向きにする
+	playerTransform_.rotation_ = {0.0f, 3.141592654f / 2.0f, 0.0f};
+	// GAME CLEARの文字（y=129〜324）と BACK TO TITLE（y=549〜）の間に収まる位置
+	playerTransform_.translation_ = {0.0f, -0.25f, 6.0f};
+	playerTransform_.scale_ = {1.0f, 1.0f, 1.0f};
+	playerTransform_.matWorld_ = MakeAffineMatrix(playerTransform_.scale_, playerTransform_.rotation_, playerTransform_.translation_);
+	playerTransform_.TransferMatrix();
+
 	// 天球と地面
 	skyDomeModel_ = Model::CreateFromOBJ("skydome", true);
 	planeModel_ = Model::CreateFromOBJ("ground", true);
@@ -98,10 +115,12 @@ void GameCreaScene::Update() {
 
 void GameCreaScene::Draw() {
 
-	// 3Dは背景（天球と地面）だけ
 	Model::PreDraw();
+	// 背景（天球と地面）は回転するカメラで
 	plane_->Draw(&camera_);
 	skyDome_->Draw(&camera_);
+	// 機体は固定カメラで、背景の手前に
+	playerModel_->Draw(playerTransform_, modelCamera_);
 	Model::PostDraw();
 
 	// 2Dスプライト描画
@@ -123,4 +142,5 @@ GameCreaScene::~GameCreaScene() {
 	delete plane_;
 	delete skyDomeModel_;
 	delete planeModel_;
+	delete playerModel_;
 }

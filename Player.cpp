@@ -31,6 +31,9 @@ void Player::Initialize(
 	assert(model);
 	model_ = model;
 
+	// 発射音の読み込み
+	seShotHandle_ = Audio::GetInstance()->LoadWave("sound/shot.wav");
+
 	// ワールドトランスフォームの初期化
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
@@ -51,9 +54,12 @@ void Player::Initialize(
 
 void Player::Updata() {
 
-	MovePlayer();
-	Rotate();
-	Attack();
+	// 撃破後は操作を受け付けない。撃った弾だけはそのまま飛ばす
+	if (!isDead_) {
+		MovePlayer();
+		Rotate();
+		Attack();
+	}
 
 	bullets_.remove_if([](playerBullet* bullet) {
 		if (bullet->IsDead()) {
@@ -84,6 +90,10 @@ void Player::Updata() {
 void Player::Draw() {
 	for (playerBullet* bullet : bullets_) {
 		bullet->Draw(camera_);
+	}
+	// 撃破後は機体とレティクルを描かない。爆散したように見せる
+	if (isDead_) {
+		return;
 	}
 	model_->Draw(worldTransform_, *camera_, &objectColor_);
 	model3DReticle_->Draw(worldTransform3DReticle_, *camera_);
@@ -204,6 +214,7 @@ void Player::Attack() {
 				newBullet->Initialize(bulletModel_, playerPos, velocity);
 				bullets_.push_back(newBullet);
 				fireCooldown_ = kFireInterval;
+				Audio::GetInstance()->PlayWave(seShotHandle_, false, kShotVolume);
 			}
 
 		} else {
@@ -217,6 +228,7 @@ void Player::Attack() {
 			newBullet->Initialize(bulletModel_, GetWorldPosition(), velocity);
 			bullets_.push_back(newBullet);
 			fireCooldown_ = kFireInterval;
+				Audio::GetInstance()->PlayWave(seShotHandle_, false, kShotVolume);
 		}
 	}
 
@@ -244,6 +256,7 @@ void Player::Attack() {
 				newBullet->Initialize(bulletModel_, playerPos, velocity);
 				bullets_.push_back(newBullet);
 				fireCooldown_ = kFireInterval;
+				Audio::GetInstance()->PlayWave(seShotHandle_, false, kShotVolume);
 			}
 
 		} else {
@@ -257,6 +270,7 @@ void Player::Attack() {
 			newBullet->Initialize(bulletModel_, GetWorldPosition(), velocity);
 			bullets_.push_back(newBullet);
 			fireCooldown_ = kFireInterval;
+				Audio::GetInstance()->PlayWave(seShotHandle_, false, kShotVolume);
 		}
 	}
 }

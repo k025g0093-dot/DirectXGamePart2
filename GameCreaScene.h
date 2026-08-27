@@ -46,6 +46,12 @@ private:
 	float blinkTimer_ = 0.0f;
 	bool showPressStart_ = true;
 
+	// クリア画面に飾るプレイヤー機体
+	KamataEngine::Model* playerModel_ = nullptr;
+	KamataEngine::WorldTransform playerTransform_;
+	// 機体専用のカメラ。背景カメラは回転するので、それとは別に固定で持つ
+	KamataEngine::Camera modelCamera_;
+
 	// 天球と地面
 	SkyDome* skyDome_ = nullptr;
 	KamataEngine::Model* skyDomeModel_ = nullptr;

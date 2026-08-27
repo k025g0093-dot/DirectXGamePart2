@@ -124,6 +124,11 @@ private:
 	int32_t hp_ = 10;
 	// プレイヤーのHPの最大値
 	static const int32_t kMaxHp = 5;
+	// 発射音
+	uint32_t seShotHandle_ = 0;
+	// 発射音の音量。連射するので小さめにしないと音が団子になる
+	static constexpr float kShotVolume = 0.12f;
+
 	// 発射クールダウン
 	int32_t fireCooldown_ = 0;
 	static const int32_t kFireInterval = 3;

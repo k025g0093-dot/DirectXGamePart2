@@ -11,7 +11,13 @@ void EnemyBullet::Initialize(Model* model, const Vector3& position, const Vector
 
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
+	// モデルが当たり判定より大きいので見た目を縮める
+	worldTransform_.scale_ = {kScale, kScale, kScale};
 	velocity_ = velocity;
+
+	// 敵の弾は赤。テクスチャの色に掛け算されるので白いテクスチャならそのまま赤になる
+	objectColor_.Initialize();
+	objectColor_.SetColor({kColorR, kColorG, kColorB, 1.0f});
 }
 
 void EnemyBullet::Update() {
@@ -35,7 +41,7 @@ void EnemyBullet::OnCollision() {
 
 
 void EnemyBullet::Draw(const Camera* camera) {
-	model_->Draw(worldTransform_, *camera);
+	model_->Draw(worldTransform_, *camera, &objectColor_);
 }
 
 Vector3 EnemyBullet::GetWorldPosition() {

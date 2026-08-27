@@ -25,6 +25,36 @@ enum class Scene {
 
 Scene scene = Scene::kTitle;
 
+//============================
+// BGM
+// タイトル・難易度選択・リザルトは TitleAndSelect、ゲーム中は GamePlaye。
+// シーンをまたいで鳴らし続けたいので、シーン側ではなくここで持つ
+//============================
+namespace {
+uint32_t bgmTitleData = 0;  // TitleAndSelect のサウンドデータ
+uint32_t bgmGameData = 0;   // GamePlaye のサウンドデータ
+uint32_t bgmClearData = 0;  // GameClear のサウンドデータ
+uint32_t bgmOverData = 0;   // GameOver のサウンドデータ
+uint32_t bgmVoice = 0;      // 今鳴っている再生ハンドル
+uint32_t bgmCurrent = 0;    // 今鳴っているサウンドデータ（同じなら鳴らし直さない）
+bool bgmStarted = false;    // 一度でも再生したか。ハンドルは0もあり得るのでフラグで持つ
+
+const float kBgmVolume = 0.35f;
+
+// BGMを切り替える。すでに同じ曲が鳴っていれば何もしない（頭出しに戻さない）
+void PlayBgm(uint32_t soundData) {
+	if (bgmStarted && bgmCurrent == soundData && Audio::GetInstance()->IsPlaying(bgmVoice)) {
+		return;
+	}
+	if (bgmStarted) {
+		Audio::GetInstance()->StopWave(bgmVoice);
+	}
+	bgmVoice = Audio::GetInstance()->PlayWave(soundData, true, kBgmVolume);
+	bgmCurrent = soundData;
+	bgmStarted = true;
+}
+} // namespace
+
 void ChangeScene();
 void UpdateScene();
 void DrawScene();
@@ -39,6 +69,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
 	ImGuiManager* imguiManager = ImGuiManager::GetInstance();
+
+	// BGMの読み込みと、タイトルBGMの再生開始
+	bgmTitleData = Audio::GetInstance()->LoadWave("sound/TitleAndSelect.wav");
+	bgmGameData = Audio::GetInstance()->LoadWave("sound/GamePlaye.wav");
+	bgmClearData = Audio::GetInstance()->LoadWave("sound/GameClear.wav");
+	bgmOverData = Audio::GetInstance()->LoadWave("sound/GameOver.wav");
+	PlayBgm(bgmTitleData);
 
 	gameScene = new GameScene();
 
@@ -116,6 +153,8 @@ void ChangeScene() {
 
 			selectLevel = new SelectLevel;
 			selectLevel->Initialize();
+			// タイトルと同じ曲なので、切り替えず流し続ける
+			PlayBgm(bgmTitleData);
 		}
 		break;
 
@@ -128,6 +167,8 @@ void ChangeScene() {
 			gameScene = new GameScene;
 			gameScene->Initialize();
 			gameScene->SetDifficultyLevel(selected);
+			// ゲーム中のBGMへ切り替え
+			PlayBgm(bgmGameData);
 		}
 		break;
 
@@ -139,6 +180,7 @@ void ChangeScene() {
 				gameScene = nullptr;
 				gameCreaScene = new GameCreaScene;
 				gameCreaScene->Initialize();
+				PlayBgm(bgmClearData);
 			} else {
 				scene = Scene::kGameOver;
 				delete gameScene;
@@ -146,6 +188,7 @@ void ChangeScene() {
 
 				gameOverScene = new GameOverScene;
 				gameOverScene->Initialize();
+				PlayBgm(bgmOverData);
 			}
 		}
 		break;

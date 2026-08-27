@@ -76,24 +76,31 @@ void SelectLevel::Initialize() {
 	descBg_->SetColor(Vector4(0.1f, 0.1f, 0.1f, 0.8f));
 
 	// 難易度の説明は1280x720の全画面オーバーレイ画像をそのまま貼る
+	// 難易度説明は難易度名の行と重なっていたので、まとめて下へずらす
+	// 数字を変えれば4つとも一緒に動く
+	const float kDescOffsetY = 70.0f;
+	// チュートリアルの説明画像だけ、文字が他の3枚より32px下に描かれている。
+	// その分を引いて、4つとも同じ高さに文字が並ぶようにする
+	const float kDescOffsetYTutorial = kDescOffsetY - 32.0f;
+
 	descTextEasy_ = Sprite::Create(easyTexture_, {0, 0});
 	descTextEasy_->SetSize(Vector2(1280, 720));
-	descTextEasy_->SetPosition(Vector2(0.0f, 0.0f));
+	descTextEasy_->SetPosition(Vector2(0.0f, kDescOffsetY));
 
 	descTextNormal_ = Sprite::Create(normalTexture_, {0, 0});
 	descTextNormal_->SetSize(Vector2(1280, 720));
-	descTextNormal_->SetPosition(Vector2(0.0f, 0.0f));
+	descTextNormal_->SetPosition(Vector2(0.0f, kDescOffsetY));
 
 	descTextHard_ = Sprite::Create(hardTexture_, {0, 0});
 	descTextHard_->SetSize(Vector2(1280, 720));
 	// ハードの画像だけ文字が左に寄っているので、少し右にずらして他と揃える
-	descTextHard_->SetPosition(Vector2(40.0f, 0.0f));
+	descTextHard_->SetPosition(Vector2(40.0f, kDescOffsetY));
 
 	// チュートリアルはまだ画像が無いので、これまで通り白い箱で表示
 	// チュートリアルの説明も他の難易度と同じく全画面の画像
 	descTextTutorial_ = Sprite::Create(tutorialDescTexture_, {0, 0});
 	descTextTutorial_->SetSize(Vector2(1280, 720));
-	descTextTutorial_->SetPosition(Vector2(0.0f, 0.0f));
+	descTextTutorial_->SetPosition(Vector2(0.0f, kDescOffsetYTutorial));
 
 	// チュートリアルパネル（全面オーバーレイ）
 	tutorialBg_ = Sprite::Create(whiteTexture_, {0, 0});

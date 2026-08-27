@@ -80,8 +80,8 @@ void GameScene::Initialize() {
 
 	// キー入力の初期化
 	input_ = Input::GetInstance();
-	// ブレンダーみたいな表示線の関数初期化
-	AxisIndicator::GetInstance()->SetVisible(true);
+	// 座標軸の表示（デバッグ用なので普段は出さない）
+	AxisIndicator::GetInstance()->SetVisible(false);
 	AxisIndicator::GetInstance()->SetTargetCamera(&debugCamera_->GetCamera());
 
 	// ポーズ画面用オーバーレイ
@@ -109,6 +109,9 @@ void GameScene::Initialize() {
 	tutorialMsg_ = Sprite::Create(tutorialMsgTexture_, {0, 0});
 	tutorialMsg_->SetSize(Vector2(1280, 720));
 	tutorialMsg_->SetPosition(Vector2(0.0f, 0.0f));
+
+	// 撃破音の読み込み
+	seEnemyDeathHandle_ = Audio::GetInstance()->LoadWave("sound/EnemyDeth.wav");
 
 	LoadEnemyPopData();
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
@@ -153,8 +156,23 @@ void GameScene::Update() {
 		}
 
 		if (player_->IsDead()) {
-			fade_->Start(Fade::Status::FadeOut, 1.0f);
-			gamePhase_ = GamePhase::kFadeOut;
+			// 撃破された瞬間に一度だけ、敵と同じデスパーティクルと撃破音を出す
+			if (playerDeathTimer_ < 0) {
+				Vector3 deathPos = player_->GetWorldPosition();
+				for (int i = 0; i < kPlayerDeathParticle; i++) {
+					DeathParticle* p = new DeathParticle();
+					p->Initialize(deathParticleModel_, &railCameraController_->GetCamera(), deathPos);
+					deathParticles_.push_back(p);
+				}
+				Audio::GetInstance()->PlayWave(seEnemyDeathHandle_, false, kSePlayerDeathVolume);
+				playerDeathTimer_ = kPlayerDeathDelay;
+			}
+			// 爆散を見せてからゲームオーバーへ
+			playerDeathTimer_--;
+			if (playerDeathTimer_ <= 0) {
+				fade_->Start(Fade::Status::FadeOut, 1.0f);
+				gamePhase_ = GamePhase::kFadeOut;
+			}
 		} else if (clearDelayTimer_ == 0) {
 			// 最後のボスを倒して、撃破演出を見終わったらクリア
 			isGameClear_ = true;
@@ -239,6 +257,8 @@ void GameScene::GameUpdate() {
 			if (isBoss) {
 				bossDefeated = true;
 			}
+			// 撃破音
+			Audio::GetInstance()->PlayWave(seEnemyDeathHandle_, false, kSeDeathVolume);
 			// 通常死亡時のみデスパーティクルを生成。ボスは派手に出す
 			int32_t particleCount = isBoss ? 40 : 8;
 			for (int i = 0; i < particleCount; i++) {
@@ -365,7 +385,10 @@ void GameScene::Draw() {
 	}
 
 	// player_->DrawUI();
-	lockOn_->Draw();
+	// 撃破後はロックオン表示を出さない
+	if (!player_->IsDead()) {
+		lockOn_->Draw();
+	}
 
 	// ポーズ中は暗転オーバーレイを描画
 	if (isPaused_) {

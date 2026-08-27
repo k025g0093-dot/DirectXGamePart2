@@ -105,6 +105,17 @@ public:
 	bool isGameClear_ = false; // ゲームクリアフラグ
 	bool isGoalReached_ = false; // ゴール到達フラグ
 
+	// 撃破音。敵にもプレイヤーにも同じ音を使う
+	uint32_t seEnemyDeathHandle_ = 0;
+	static constexpr float kSeDeathVolume = 0.32f;      // 敵
+	static constexpr float kSePlayerDeathVolume = 0.85f; // プレイヤーは少し大きく
+
+	// プレイヤー撃破の演出時間
+	// -1 = まだ死んでいない / 0 になったらフェードアウトへ
+	int32_t playerDeathTimer_ = -1;
+	static const int32_t kPlayerDeathDelay = 90;   // 約1.5秒
+	static const int32_t kPlayerDeathParticle = 24; // 敵8・ボス40の中間
+
 	// 最後のボスを倒してからクリア画面へ移るまでの待ち時間
 	// -1 = まだボスを倒していない / 0 になった瞬間にクリアへ
 	int32_t clearDelayTimer_ = -1;
