@@ -644,7 +644,8 @@ void GameScene::SpawnAlly(const KamataEngine::Vector3& position, KamataEngine::M
 	ally->Initialize(model, &railCameraController_->GetCamera(), position, (int32_t)allies_.size());
 	ally->SetPlayer(player_);
 	ally->SetGameScene(this);
-	ally->SetBulletModel(enemyBulletModel_);
+	// 仲間はプレイヤーと同じ弾を撃つ（敵弾のモデルとは別物にしておく）
+	ally->SetBulletModel(playerBulletModel_);
 	allies_.push_back(ally);
 }
 

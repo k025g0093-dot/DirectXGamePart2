@@ -45,17 +45,20 @@ private:
 	uint32_t normalTexture_ = 0;
 	uint32_t hardTexture_ = 0;
 	uint32_t tutorialDescTexture_ = 0;
+	uint32_t selectLevelTexture_ = 0;
 	// チュートリアル画面（タイトル・本文・戻る案内まで1枚に入った画像）
 	uint32_t tutorialTexture_ = 0;
 
-	// 各難易度ボタン
-	KamataEngine::Sprite* btnEasy_ = nullptr;
-	KamataEngine::Sprite* btnNormal_ = nullptr;
-	KamataEngine::Sprite* btnHard_ = nullptr;
-	KamataEngine::Sprite* btnTutorial_ = nullptr;
+	// 難易度の並びを描いた画像
+	KamataEngine::Sprite* selectLevelSprite_ = nullptr;
 
 	// 選択カーソル
 	KamataEngine::Sprite* cursor_ = nullptr;
+	// 選択中を強調する下線と左右マーカー
+	KamataEngine::Sprite* cursorBar_ = nullptr;
+	KamataEngine::Sprite* markerL_ = nullptr;
+	KamataEngine::Sprite* markerR_ = nullptr;
+	float selectPulse_ = 0.0f;
 	int32_t selectIndex_ = 0; // 0=Tutorial, 1=Easy, 2=Normal, 3=Hard
 	bool prevDpadLeft_ = false;
 	bool prevDpadRight_ = false;
@@ -79,7 +82,4 @@ private:
 	// タイトルテクスチャ
 	KamataEngine::Sprite* titleSprite_ = nullptr;
 
-	// 「PRESS START」表示用スプライト
-	KamataEngine::Sprite* pressStartSprite_ = nullptr;
-	float blinkTimer_ = 0.0f;
 };

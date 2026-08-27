@@ -18,6 +18,7 @@ void SelectLevel::Initialize() {
 	normalTexture_ = TextureManager::Load("normalUI.png");
 	hardTexture_ = TextureManager::Load("hardUi.png");
 	tutorialDescTexture_ = TextureManager::Load("tutorialUI.png");
+	selectLevelTexture_ = TextureManager::Load("selectLevelUI.png");
 	tutorialTexture_ = TextureManager::Load("tutorial.png");
 
 #pragma region 背景の3D（天球と地面）
@@ -45,35 +46,28 @@ void SelectLevel::Initialize() {
 	titleSprite_->SetSize(Vector2(1280, 720));
 	titleSprite_->SetPosition(Vector2(0.0f, 0.0f));
 
-	// 難易度ボタン（4つ並べる：Easy, Normal, Hard, Tutorial）中央寄せ
-	float baseX = 280.0f;
-	float baseY = 260.0f;
-	float spacing = 180.0f;
-
-	btnTutorial_ = Sprite::Create(whiteTexture_, {0, 0});
-	btnTutorial_->SetSize(Vector2(150, 60));
-	btnTutorial_->SetPosition(Vector2(baseX, baseY));
-	btnTutorial_->SetColor(Vector4(0.6f, 0.6f, 0.2f, 1.0f)); // 黄
-
-	btnEasy_ = Sprite::Create(whiteTexture_, {0, 0});
-	btnEasy_->SetSize(Vector2(150, 60));
-	btnEasy_->SetPosition(Vector2(baseX + spacing, baseY));
-	btnEasy_->SetColor(Vector4(0.3f, 0.7f, 0.3f, 1.0f)); // 緑
-
-	btnNormal_ = Sprite::Create(whiteTexture_, {0, 0});
-	btnNormal_->SetSize(Vector2(150, 60));
-	btnNormal_->SetPosition(Vector2(baseX + spacing * 2, baseY));
-	btnNormal_->SetColor(Vector4(0.3f, 0.3f, 0.8f, 1.0f)); // 青
-
-	btnHard_ = Sprite::Create(whiteTexture_, {0, 0});
-	btnHard_->SetSize(Vector2(150, 60));
-	btnHard_->SetPosition(Vector2(baseX + spacing * 3, baseY));
-	btnHard_->SetColor(Vector4(0.8f, 0.2f, 0.2f, 1.0f)); // 赤
+	// 難易度の並び（チュートリアル / イージー / ノーマル / ハード）は画像1枚で描く
+	selectLevelSprite_ = Sprite::Create(selectLevelTexture_, {0, 0});
+	selectLevelSprite_->SetSize(Vector2(1280, 720));
+	selectLevelSprite_->SetPosition(Vector2(0.0f, 0.0f));
 
 	// 選択カーソル
+	// 選択中を示す帯
 	cursor_ = Sprite::Create(whiteTexture_, {0, 0});
-	cursor_->SetSize(Vector2(160, 70));
-	cursor_->SetColor(Vector4(1, 1, 1, 0.5f));
+	cursor_->SetColor(Vector4(1.0f, 1.0f, 1.0f, 0.35f));
+
+	// 選択中の文字の下に引く明るい線
+	cursorBar_ = Sprite::Create(whiteTexture_, {0, 0});
+	cursorBar_->SetColor(Vector4(1, 1, 1, 1.0f));
+
+	// 選択中の文字を左右から挟むマーカー（黒）
+	markerL_ = Sprite::Create(whiteTexture_, {0, 0});
+	markerL_->SetSize(Vector2(10, 60));
+	markerL_->SetColor(Vector4(0, 0, 0, 1.0f));
+
+	markerR_ = Sprite::Create(whiteTexture_, {0, 0});
+	markerR_->SetSize(Vector2(10, 60));
+	markerR_->SetColor(Vector4(0, 0, 0, 1.0f));
 
 	// 難易度説明パネルの背景（画像が無いチュートリアル用にだけ使う）
 	descBg_ = Sprite::Create(whiteTexture_, {0, 0});
@@ -112,11 +106,6 @@ void SelectLevel::Initialize() {
 	tutorialImage_->SetSize(Vector2(1280, 720));
 	tutorialImage_->SetPosition(Vector2(0.0f, 0.0f));
 
-	// 「PRESS START」スプライト
-	pressStartSprite_ = Sprite::Create(whiteTexture_, {0, 0});
-	pressStartSprite_->SetPosition(Vector2(440.0f, 500.0f));
-	pressStartSprite_->SetSize(Vector2(400.0f, 40.0f));
-	pressStartSprite_->SetColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 }
 
 void SelectLevel::Update() {
@@ -226,20 +215,39 @@ void SelectLevel::Update() {
 		break;
 	}
 
-	// カーソル位置を選択中のボタンに合わせる
-	float baseX = 280.0f;
-	float spacing = 180.0f;
-	cursor_->SetPosition(Vector2(baseX + selectIndex_ * spacing - 5, 255));
+	// カーソルを選択中の文字に合わせる
+	// 画像内の文字幅がバラバラなので、項目ごとに位置と幅を持たせている
+	static const float kCursorX[4] = {122.0f, 499.0f, 747.0f, 989.0f};
+	static const float kCursorW[4] = {347.0f, 218.0f, 223.0f, 186.0f};
+	int32_t ci = selectIndex_;
+	if (ci < 0) ci = 0;
+	if (ci > 3) ci = 3;
+	float cx = kCursorX[ci];
+	float cw = kCursorW[ci];
+
+	cursor_->SetPosition(Vector2(cx, 278.0f));
+	cursor_->SetSize(Vector2(cw, 80.0f));
+
+	// 下線は文字のすぐ下に
+	cursorBar_->SetPosition(Vector2(cx, 358.0f));
+	cursorBar_->SetSize(Vector2(cw, 6.0f));
+
+	// マーカーは帯の外側に置く
+	markerL_->SetPosition(Vector2(cx - 24.0f, 288.0f));
+	markerR_->SetPosition(Vector2(cx + cw + 14.0f, 288.0f));
+
+	// ゆっくり明滅させて「ここを選んでいる」を強調する
+	selectPulse_ += 0.08f;
+	float pulse = 0.5f + 0.5f * sinf(selectPulse_);
+	cursor_->SetColor(Vector4(1.0f, 1.0f, 1.0f, 0.25f + 0.20f * pulse));
+	float markAlpha = 0.65f + 0.35f * pulse;
+	cursorBar_->SetColor(Vector4(1, 1, 1, markAlpha));
+	markerL_->SetColor(Vector4(0, 0, 0, markAlpha));
+	markerR_->SetColor(Vector4(0, 0, 0, markAlpha));
 
 	// 難易度説明は Draw() で選択中のものだけ描くので、ここでは位置をいじらない
 	// （Easy/Normal/Hard は全画面画像、Tutorial だけ白い箱）
 
-	// 「PRESS START」点滅演出
-	if (gamePhase_ == GamePhase::kPlay && !showTutorial_) {
-		blinkTimer_ += 0.05f;
-		float alpha = (sinf(blinkTimer_) * 0.5f + 0.5f);
-		pressStartSprite_->SetColor(Vector4(1.0f, 1.0f, 1.0f, alpha));
-	}
 }
 
 void SelectLevel::Draw() {
@@ -256,11 +264,12 @@ void SelectLevel::Draw() {
 	Sprite::PreDraw();
 
 	titleSprite_->Draw();
-	btnEasy_->Draw();
-	btnNormal_->Draw();
-	btnHard_->Draw();
-	btnTutorial_->Draw();
+	// 帯を敷く → 文字を重ねる → 下線とマーカーを一番上に出す
 	cursor_->Draw();
+	selectLevelSprite_->Draw();
+	cursorBar_->Draw();
+	markerL_->Draw();
+	markerR_->Draw();
 
 	// 難易度説明（チュートリアルオーバーレイが開いていない時に表示）
 	if (!showTutorial_) {
@@ -278,8 +287,6 @@ void SelectLevel::Draw() {
 		// 先に背景を暗くしてから、説明画像を重ねる
 		tutorialBg_->Draw();
 		tutorialImage_->Draw();
-	} else {
-		pressStartSprite_->Draw();
 	}
 
 	Sprite::PostDraw();
@@ -297,12 +304,11 @@ SelectLevel::~SelectLevel() {
 	delete groundModel_;
 
 	delete titleSprite_;
-	delete btnEasy_;
-	delete btnNormal_;
-	delete btnHard_;
-	delete btnTutorial_;
+	delete selectLevelSprite_;
 	delete cursor_;
-	delete pressStartSprite_;
+	delete cursorBar_;
+	delete markerL_;
+	delete markerR_;
 	delete descBg_;
 	delete descTextEasy_;
 	delete descTextNormal_;
