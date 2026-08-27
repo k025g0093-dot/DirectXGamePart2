@@ -105,6 +105,11 @@ public:
 	bool isGameClear_ = false; // ゲームクリアフラグ
 	bool isGoalReached_ = false; // ゴール到達フラグ
 
+	// 最後のボスを倒してからクリア画面へ移るまでの待ち時間
+	// -1 = まだボスを倒していない / 0 になった瞬間にクリアへ
+	int32_t clearDelayTimer_ = -1;
+	static const int32_t kClearDelay = 150; // 約2.5秒
+
 	// ポーズ
 	bool isPaused_ = false;
 	bool prevStartButton_ = false;
@@ -118,6 +123,7 @@ public:
 
 	// チュートリアルメッセージ
 	KamataEngine::Sprite* tutorialMsg_ = nullptr;
+	uint32_t tutorialMsgTexture_ = 0;
 	int32_t tutorialTimer_ = 0;
 	bool tutorialShown_ = false;
 

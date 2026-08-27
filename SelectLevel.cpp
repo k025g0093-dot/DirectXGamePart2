@@ -17,6 +17,7 @@ void SelectLevel::Initialize() {
 	easyTexture_ = TextureManager::Load("EZUI.png");
 	normalTexture_ = TextureManager::Load("normalUI.png");
 	hardTexture_ = TextureManager::Load("hardUi.png");
+	tutorialDescTexture_ = TextureManager::Load("tutorialUI.png");
 	tutorialTexture_ = TextureManager::Load("tutorial.png");
 
 #pragma region 背景の3D（天球と地面）
@@ -95,10 +96,10 @@ void SelectLevel::Initialize() {
 	descTextHard_->SetPosition(Vector2(40.0f, 0.0f));
 
 	// チュートリアルはまだ画像が無いので、これまで通り白い箱で表示
-	descTextTutorial_ = Sprite::Create(whiteTexture_, {0, 0});
-	descTextTutorial_->SetSize(Vector2(680, 60));
-	descTextTutorial_->SetPosition(Vector2(300, 350));
-	descTextTutorial_->SetColor(Vector4(1.0f, 0.8f, 0.2f, 1.0f)); // 金色テキスト背景
+	// チュートリアルの説明も他の難易度と同じく全画面の画像
+	descTextTutorial_ = Sprite::Create(tutorialDescTexture_, {0, 0});
+	descTextTutorial_->SetSize(Vector2(1280, 720));
+	descTextTutorial_->SetPosition(Vector2(0.0f, 0.0f));
 
 	// チュートリアルパネル（全面オーバーレイ）
 	tutorialBg_ = Sprite::Create(whiteTexture_, {0, 0});
@@ -264,12 +265,8 @@ void SelectLevel::Draw() {
 	// 難易度説明（チュートリアルオーバーレイが開いていない時に表示）
 	if (!showTutorial_) {
 		switch (selectIndex_) {
-		case 0:
-			// チュートリアルはまだ画像が無いので、暗い帯 + 白い箱で表示
-			descBg_->Draw();
-			descTextTutorial_->Draw();
-			break;
-		// Easy/Normal/Hard は画像に帯まで描かれているので descBg_ は重ねない
+		// 4つとも画像に帯まで描かれているので descBg_ は重ねない
+		case 0: descTextTutorial_->Draw(); break;
 		case 1: descTextEasy_->Draw(); break;
 		case 2: descTextNormal_->Draw(); break;
 		case 3: descTextHard_->Draw(); break;

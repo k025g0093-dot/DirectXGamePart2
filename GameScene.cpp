@@ -103,11 +103,12 @@ void GameScene::Initialize() {
 	hpBarFill_->SetPosition(Vector2(22, 22));
 	hpBarFill_->SetColor(Vector4(0.2f, 0.9f, 0.2f, 1.0f));
 
-	// チュートリアルメッセージ（画面下部に表示）
-	tutorialMsg_ = Sprite::Create(uiTexture_, {0, 0});
-	tutorialMsg_->SetSize(Vector2(600, 40));
-	tutorialMsg_->SetPosition(Vector2(340, 650));
-	tutorialMsg_->SetColor(Vector4(0.0f, 0.0f, 0.0f, 0.7f));
+	// ゲーム中のチュートリアルメッセージ
+	// 帯も文字も画像に描かれているので、全画面サイズでそのまま貼る
+	tutorialMsgTexture_ = TextureManager::Load("gameTyutliar.png");
+	tutorialMsg_ = Sprite::Create(tutorialMsgTexture_, {0, 0});
+	tutorialMsg_->SetSize(Vector2(1280, 720));
+	tutorialMsg_->SetPosition(Vector2(0.0f, 0.0f));
 
 	LoadEnemyPopData();
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
@@ -154,7 +155,13 @@ void GameScene::Update() {
 		if (player_->IsDead()) {
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
 			gamePhase_ = GamePhase::kFadeOut;
-		} else if (isGoalReached_ && enemies_.empty()) {
+		} else if (clearDelayTimer_ == 0) {
+			// 最後のボスを倒して、撃破演出を見終わったらクリア
+			isGameClear_ = true;
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			gamePhase_ = GamePhase::kFadeOut;
+		} else if (clearDelayTimer_ < 0 && isGoalReached_ && enemies_.empty()) {
+			// 保険：ボスがいない構成でも、ゴール到達後に敵が全滅すればクリア
 			isGameClear_ = true;
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
 			gamePhase_ = GamePhase::kFadeOut;
@@ -223,10 +230,18 @@ void GameScene::GameUpdate() {
 		ally->Updata();
 	}
 
-	enemies_.remove_if([this](Enemy* enemy) {
+	// このフレームでボスを倒したか
+	bool bossDefeated = false;
+
+	enemies_.remove_if([this, &bossDefeated](Enemy* enemy) {
 		if (enemy->IsDead()) {
-			// 通常死亡時のみデスパーティクルを生成
-			for (int i = 0; i < 8; i++) {
+			bool isBoss = (enemy->enemyType_ == EnemyType::kBoss);
+			if (isBoss) {
+				bossDefeated = true;
+			}
+			// 通常死亡時のみデスパーティクルを生成。ボスは派手に出す
+			int32_t particleCount = isBoss ? 40 : 8;
+			for (int i = 0; i < particleCount; i++) {
 				DeathParticle* p = new DeathParticle();
 				p->Initialize(deathParticleModel_, &railCameraController_->GetCamera(), enemy->GetWorldPosition());
 				deathParticles_.push_back(p);
@@ -247,6 +262,25 @@ void GameScene::GameUpdate() {
 		}
 		return false;
 	});
+
+	// 最後のボスを倒したら、撃破演出を見せてからクリアへ移る
+	if (bossDefeated) {
+		bool bossRemains = false;
+		for (Enemy* e : enemies_) {
+			if (e->enemyType_ == EnemyType::kBoss) {
+				bossRemains = true;
+				break;
+			}
+		}
+		if (!bossRemains) {
+			clearDelayTimer_ = kClearDelay;
+		}
+	}
+
+	// クリア演出の待ち時間を進める（ポーズ中は止まる）
+	if (clearDelayTimer_ > 0) {
+		clearDelayTimer_--;
+	}
 
 	bullets_.remove_if([](EnemyBullet* bullet) {
 		if (bullet->IsDead()) {

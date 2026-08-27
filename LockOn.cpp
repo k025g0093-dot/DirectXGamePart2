@@ -70,9 +70,20 @@ target_ = nullptr;
 
 }
 
-void LockOn::Draw() { 
+void LockOn::Draw() {
 	if (isLockedOn_) {
-		lockOnSprite_->SetColor(Vector4(1, 1, 1, alpha_));
+
+		if (target_ && target_->IsWeakened()) {
+			// 仲間にできる敵を狙っているとき。色を赤にして、さらに明滅させる
+			// （敵の機体は小さくて色の変化が見えにくいので、常に見ているレティクル側で知らせる）
+			convertPulse_ += 0.15f;
+			float pulse = 0.75f + 0.25f * sinf(convertPulse_);
+			lockOnSprite_->SetColor(Vector4(1.0f, 0.12f, 0.12f, alpha_ * pulse + 0.35f));
+		} else {
+			convertPulse_ = 0.0f;
+			lockOnSprite_->SetColor(Vector4(1, 1, 1, alpha_));
+		}
+
 		lockOnSprite_->Draw();
 	}
 }

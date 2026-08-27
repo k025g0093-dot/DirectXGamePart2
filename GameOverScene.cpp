@@ -11,12 +11,13 @@ void GameOverScene::Initialize() {
 	fade_->Initialize();
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 
-	modelTitle_ = Model::CreateFromOBJ("titleFont", true);
-	assert(modelTitle_);
-
-	worldTransform_.Initialize();
 	camera_.Initialize();
-	objectColor_.Initialize();
+
+	// 結果表示は3Dモデルをやめて画像にする
+	resultTexture_ = TextureManager::Load("GAMEOVER.png");
+	resultSprite_ = Sprite::Create(resultTexture_, {0, 0});
+	resultSprite_->SetPosition(Vector2(0.0f, 0.0f));
+	resultSprite_->SetSize(Vector2(1280.0f, 720.0f));
 
 	// 「BACK TO TITLE」スプライト
 	pressStartTexture_ = TextureManager::Load("backTITLEUI.png");
@@ -25,14 +26,10 @@ void GameOverScene::Initialize() {
 	pressStartSprite_->SetSize(Vector2(1280.0f, 720.0f));
 	pressStartSprite_->SetColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 
-	// 1. キャラを正面に向ける設定
-	worldTransform_.scale_ = {0.8f, 0.8f, 0.8f};    // 少し大きく設定
-	worldTransform_.rotation_ = {0.0f, 0.0f, 0.0f}; // 向きが逆なら 3.1415f (180度) に
-	worldTransform_.translation_ = {0.0f, 0.0f, 0.0f};
-
-	// 2. カメラの初期位置（キャラの正面に配置）
-	// zをマイナスにすると手前になります
-	camera_.translation_ = {0.0f, 0.5f, -15.0f};
+	// カメラは背景（天球と地面）を映すためだけに使う
+	camera_.translation_ = {0.0f, 0.0f, 0.0f};
+	camera_.rotation_ = {0.18f, 0.0f, 0.0f};
+	camera_.UpdateMatrix();
 
 	// 天球と地面
 	skyDomeModel_ = Model::CreateFromOBJ("skydome", true);
@@ -83,13 +80,9 @@ void GameOverScene::Update() {
 		break;
 	}
 
-	// --- キャラの行列更新 ---
-	worldTransform_.rotation_.x += 0.1f;
-	worldTransform_.matWorld_ = MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
-	worldTransform_.TransferMatrix();
-
-	// --- カメラの行列更新 ---
-	// 座標などを変えた後は、UpdateMatrix を呼ばないと画面に反映されません
+	// 背景をゆっくり回して、止まった絵に見えないようにする
+	skyRotation_ += 0.0015f;
+	camera_.rotation_.y = skyRotation_;
 	camera_.UpdateMatrix();
 
 	skyDome_->Update();
@@ -105,27 +98,26 @@ void GameOverScene::Update() {
 
 void GameOverScene::Draw() {
 
+	// 3Dは背景（天球と地面）だけ
 	Model::PreDraw();
 	plane_->Draw(&camera_);
 	skyDome_->Draw(&camera_);
-	if (modelTitle_) {
-		modelTitle_->Draw(worldTransform_, camera_, &objectColor_);
-	}
-	fade_->Draw();
-
-	// 3Dモデル描画後の終了処理
 	Model::PostDraw();
 
 	// 2Dスプライト描画
 	Sprite::PreDraw();
+	resultSprite_->Draw();
 	if (showPressStart_) {
 		pressStartSprite_->Draw();
 	}
 	Sprite::PostDraw();
+
+	fade_->Draw();
 }
 
 GameOverScene::~GameOverScene() {
 	delete fade_;
+	delete resultSprite_;
 	delete pressStartSprite_;
 	delete skyDome_;
 	delete plane_;

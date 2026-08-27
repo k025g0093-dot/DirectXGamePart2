@@ -165,8 +165,37 @@ void Enemy::Update() {
 
 		UpdateWorldTransform(worldTransform_);
 
+		// プレイヤーを追い越したら、だんだん透明にしていく
+		UpdateFadeOut();
+
 		// 画面外へ抜けたら一定時間後に退場させる
 		UpdateOffScreen();
+}
+
+// プレイヤーより後ろへ抜けた敵を、下がるほど薄くしていく
+// （追い越した敵が視界に残り続けて画面がうるさくなるのを防ぐ）
+void Enemy::UpdateFadeOut() {
+
+	if (!player_) {
+		return;
+	}
+
+	float playerZ = player_->GetWorldPosition().z;
+	float myZ = worldTransform_.translation_.z;
+
+	if (myZ >= playerZ) {
+		// まだプレイヤーより前にいる
+		fadeAlpha_ = 1.0f;
+	} else {
+		// 追い越した距離に応じて薄くする
+		float t = (playerZ - myZ) / kFadeDistance;
+		fadeAlpha_ = 1.0f - t;
+		if (fadeAlpha_ < 0.0f) {
+			fadeAlpha_ = 0.0f;
+		}
+	}
+
+	objectColor_.SetColor({baseColor_.x, baseColor_.y, baseColor_.z, fadeAlpha_});
 }
 
 // カメラより後ろへ抜けた敵を、一定時間後に退場扱いにする
@@ -442,7 +471,7 @@ void Enemy::OnCollision() {
 		return;
 	}
 	hp_--;
-	objectColor_.SetColor({1.0f, 1.0f, 1.0f, 1.0f});
+	baseColor_ = {1.0f, 1.0f, 1.0f};
 	if (hp_ <= 0) {
 		isDead_ = true;
 	} else {
@@ -450,10 +479,12 @@ void Enemy::OnCollision() {
 
 		if (enemyType_ != EnemyType::kTank && enemyType_ != EnemyType::kBoss && hp_ <= kWeakenHp) {
 			isWeakened_ = true;
-			objectColor_.SetColor({1.0f, 0.85f, 0.2f, 1.0f});
+			baseColor_ = {1.0f, 0.85f, 0.2f};
 		}
 
 	}
+	// 透明度は毎フレーム UpdateFadeOut が決めるので、ここでは色だけ入れておく
+	objectColor_.SetColor({baseColor_.x, baseColor_.y, baseColor_.z, fadeAlpha_});
 };
 
 Vector3 Enemy::GetWorldPosition() {

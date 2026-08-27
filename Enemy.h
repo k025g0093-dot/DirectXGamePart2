@@ -110,6 +110,13 @@ private:
 	// カメラからこれだけ後ろへ下がったら画面外とみなす
 	static constexpr float kOffScreenMargin = 3.0f;
 
+	// プレイヤーを追い越した敵のフェードアウト
+	// 現在の不透明度（1.0で不透明）と、弱体化などで変わる元の色
+	float fadeAlpha_ = 1.0f;
+	KamataEngine::Vector3 baseColor_ = {1.0f, 1.0f, 1.0f};
+	// プレイヤーからこれだけ後ろへ下がると完全に透明になる
+	static constexpr float kFadeDistance = 16.0f;
+
 private: // 追加した移動パターンで使うパラメータ
 	// 波状移動・往復移動などで共通して使う進行角
 	float moveTimer_ = 0.0f;
@@ -153,4 +160,7 @@ private:
 
 	// 画面外へ抜けた敵の退場判定
 	void UpdateOffScreen();
+
+	// プレイヤーを追い越した敵を薄くしていく
+	void UpdateFadeOut();
 };

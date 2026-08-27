@@ -32,16 +32,13 @@ public:
 	Fade* fade_ = nullptr;
 
 private:
-	// ワールドトランスフォーム
-	KamataEngine::WorldTransform worldTransform_;
-	// ビュープロジェクション（カメラ）
+	// 背景（天球と地面）を映すカメラ。ゆっくり回す
 	KamataEngine::Camera camera_;
+	float skyRotation_ = 0.0f;
 
-	// タイトル用のモデルなどが必要な場合はここに追加
-	KamataEngine::Model* modelTitle_ = nullptr;
-
-	// ★これを追加
-	KamataEngine::ObjectColor objectColor_;
+	// 結果表示の画像
+	KamataEngine::Sprite* resultSprite_ = nullptr;
+	uint32_t resultTexture_ = 0;
 
 	// 「BACK TO TITLE」表示用スプライト
 	KamataEngine::Sprite* pressStartSprite_ = nullptr;

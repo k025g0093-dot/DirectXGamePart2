@@ -44,6 +44,7 @@ private:
 	uint32_t easyTexture_ = 0;
 	uint32_t normalTexture_ = 0;
 	uint32_t hardTexture_ = 0;
+	uint32_t tutorialDescTexture_ = 0;
 	// チュートリアル画面（タイトル・本文・戻る案内まで1枚に入った画像）
 	uint32_t tutorialTexture_ = 0;
 

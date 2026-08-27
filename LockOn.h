@@ -24,4 +24,7 @@ private:
 	KamataEngine::Vector3 targetScreenPosition_ = {};
 	Enemy* target_ = nullptr;
 
+	// 仲間にできる敵を狙っているときの明滅用
+	float convertPulse_ = 0.0f;
+
 };
